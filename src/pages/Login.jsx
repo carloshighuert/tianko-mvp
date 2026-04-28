@@ -267,6 +267,19 @@ function Login() {
             <p style={{ fontSize: 13, color: '#888', textAlign: 'center', marginTop: 12 }}>
               ¿Primera vez? Te registramos automáticamente con tu número.
             </p>
+            <div style={{ textAlign: 'center', marginTop: 24 }}>
+              <p style={{ fontSize: 13, color: '#999', marginBottom: 8 }}>
+                ¿Solo quieres explorar?
+              </p>
+              <a href="/" style={{
+                fontSize: 14,
+                color: '#1a1a1a',
+                textDecoration: 'underline',
+                fontWeight: 500
+              }}>
+                Ver productos sin registrarme →
+              </a>
+            </div>
           </>
         )}
 
