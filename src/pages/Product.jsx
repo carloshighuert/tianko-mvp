@@ -168,8 +168,6 @@ function Product() {
     }])
   }
 
-  console.log('Product data:', product, store)
-
   if (loading) return (
     <p style={{ textAlign: 'center', padding: 20 }}>Cargando...</p>
   )
@@ -209,29 +207,67 @@ function Product() {
         }}>
 
           {/* IMAGEN */}
-          {product.image_url && (
+          {product?.image_url && (
             <img
               src={product.image_url}
-              alt={product.title}
+              alt={product?.title}
               style={{ width: '100%', borderRadius: 12, marginBottom: 12 }}
             />
           )}
 
           {/* TÍTULO */}
-          <h2 style={{ margin: '0 0 4px' }}>{capitalize(product.title)}</h2>
+          <h2 style={{ margin: '0 0 4px' }}>{capitalize(product?.title)}</h2>
+
+          {/* PRECIO */}
+          <p style={{ fontSize: 28, fontWeight: 'bold', margin: '8px 0' }}>
+            ${product?.price}
+          </p>
 
           {/* TIENDA */}
           {store && (
-            <div style={{ marginBottom: 8 }}>
-              <p style={{ margin: 0, color: '#666', fontSize: 14 }}>{store.name}</p>
+            <div style={{ marginBottom: 12 }}>
+              <p style={{ margin: 0, color: '#666', fontSize: 14 }}>{store?.name}</p>
               <Link
-                to={`/tienda/${store.id}`}
+                to={`/tienda/${store?.id}`}
                 style={{ fontSize: 13, color: '#007bff', textDecoration: 'none' }}
               >
-                Ver más productos →
+                Ver más productos de esta tienda →
               </Link>
             </div>
           )}
+
+          {/* PRUEBA SOCIAL — solo si hay datos reales */}
+          {proofMessage && (
+            <p style={{ fontSize: 13, color: '#e67e22', margin: '0 0 8px' }}>
+              {proofMessage}
+            </p>
+          )}
+
+          {/* CONFIANZA */}
+          <p style={{ color: 'green', fontWeight: 'bold', fontSize: 14, margin: '0 0 12px' }}>
+            ✓ Respuesta directa del vendedor
+          </p>
+
+          {/* CTA PRINCIPAL — WhatsApp */}
+          <button
+            onClick={handleWhatsApp}
+            style={{
+              background: '#25D366',
+              color: 'white',
+              padding: 16,
+              width: '100%',
+              borderRadius: 12,
+              border: 'none',
+              fontWeight: 'bold',
+              fontSize: 16,
+              cursor: 'pointer',
+              marginBottom: 8
+            }}
+          >
+            💬 Contactar vendedor
+          </button>
+
+          {/* EXPLORAR */}
           <button onClick={() => navigate('/')} style={{
             background: 'none',
             border: '1px solid #ddd',
@@ -245,48 +281,8 @@ function Product() {
             🛍️ Explorar todos los productos
           </button>
 
-          {/* PRECIO */}
-          <p style={{ fontSize: 28, fontWeight: 'bold', margin: '8px 0' }}>
-            ${product.price}
-          </p>
-
-          {/* PRUEBA SOCIAL REAL — solo si hay datos */}
-          {proofMessage && (
-            <p style={{ fontSize: 13, color: '#e67e22', margin: '0 0 8px' }}>
-              {proofMessage}
-            </p>
-          )}
-
-          {/* CONFIANZA */}
-          <p style={{ color: 'green', fontWeight: 'bold', fontSize: 14, margin: '0 0 12px' }}>
-            ✓ Respuesta directa del vendedor
-          </p>
-
-          {/* CTA PRINCIPAL */}
-          <button
-            onClick={handleWhatsApp}
-            style={{
-              background: '#25D366',
-              color: 'white',
-              padding: 16,
-              width: '100%',
-              borderRadius: 12,
-              border: 'none',
-              fontWeight: 'bold',
-              fontSize: 16,
-              cursor: 'pointer'
-            }}
-          >
-            💬 Preguntar disponibilidad
-          </button>
-
           {/* CONFIANZA SECUNDARIA */}
-          <p style={{
-            fontSize: 12,
-            color: '#999',
-            textAlign: 'center',
-            marginTop: 8
-          }}>
+          <p style={{ fontSize: 12, color: '#999', textAlign: 'center', marginTop: 12 }}>
             ✔ Contacto directo · Sin comisiones · Respuesta rápida
           </p>
 

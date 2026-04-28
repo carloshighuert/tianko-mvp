@@ -186,12 +186,17 @@ function Login() {
           style={{ height: 120, width: 'auto', marginBottom: 24, display: 'block', margin: '0 auto 24px' }}
           onError={(e) => console.log('Logo error:', e.target.src)}
         />
-        <p style={{ textAlign: 'center', color: '#666', marginBottom: 32, fontSize: 14 }}>
+        <p style={{ textAlign: 'center', color: '#666', marginBottom: 4, fontSize: 14 }}>
           {step === 'phone'
             ? 'Ingresa tu número para entrar o registrarte'
             : `Código enviado a ${phone}`
           }
         </p>
+        {step === 'phone' && (
+          <p style={{ fontSize: 12, color: '#aaa', textAlign: 'center', marginTop: -8, marginBottom: 16 }}>
+            Tu tianguis, ahora digital
+          </p>
+        )}
 
         {/* ── PASO 1: TELÉFONO ── */}
         {step === 'phone' && (
@@ -259,6 +264,9 @@ function Login() {
             >
               {loading ? 'Enviando código...' : 'Recibir código SMS →'}
             </button>
+            <p style={{ fontSize: 13, color: '#888', textAlign: 'center', marginTop: 12 }}>
+              ¿Primera vez? Te registramos automáticamente con tu número.
+            </p>
           </>
         )}
 
