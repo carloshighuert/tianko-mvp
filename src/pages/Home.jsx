@@ -136,6 +136,7 @@ function Home() {
 
         {/* ── BUSCADOR ── */}
         <input
+          className="search-input"
           placeholder="🔍 Busca productos o tianguis..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -147,7 +148,10 @@ function Home() {
             fontSize: 15,
             marginBottom: 20,
             boxSizing: 'border-box',
-            background: 'white'
+            backgroundColor: '#ffffff',
+            color: '#111111',
+            WebkitTextFillColor: '#111111',
+            caretColor: '#111111'
           }}
         />
 

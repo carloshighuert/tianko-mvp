@@ -54,6 +54,10 @@ body {
   margin: 0;
 }
 
+.search-input::placeholder {
+  color: #999999;
+}
+
 #root {
   width: 1126px;
   max-width: 100%;
