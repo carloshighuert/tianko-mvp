@@ -183,7 +183,7 @@ function Login() {
         <img
           src="/tianko-logo.png"
           alt="Tianko"
-          style={{ height: 120, width: 'auto', marginBottom: 24, display: 'block', margin: '0 auto 24px' }}
+          style={{ height: 140, width: 'auto', marginBottom: 24, display: 'block', margin: '0 auto 24px' }}
           onError={(e) => console.log('Logo error:', e.target.src)}
         />
         <p style={{ textAlign: 'center', color: '#666', marginBottom: 4, fontSize: 14 }}>

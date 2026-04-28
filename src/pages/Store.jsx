@@ -42,7 +42,7 @@ function Store() {
       <div style={{ maxWidth: 420, margin: '0 auto' }}>
 
         <img src="/tianko-logo.png" alt="Tianko"
-          style={{ height: 64, width: 'auto', display: 'block', margin: '0 auto 16px' }} />
+          style={{ height: 74, width: 'auto', display: 'block', margin: '0 auto 16px' }} />
         <h1 style={{ fontSize: 22, fontWeight: 700, color: '#111', textAlign: 'center', margin: '0 0 16px' }}>
           {store?.name}
         </h1>

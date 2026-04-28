@@ -201,7 +201,7 @@ function Product() {
           marginBottom: 16
         }}>
           <Link to="/">
-            <img src="/tianko-logo.png" alt="Tianko" style={{ height: 44, width: 'auto' }} />
+            <img src="/tianko-logo.png" alt="Tianko" style={{ height: 74, width: 'auto' }} />
           </Link>
           <span style={{ fontSize: 13, color: '#666', fontStyle: 'italic' }}>Tu tianguis, ahora digital</span>
         </div>
