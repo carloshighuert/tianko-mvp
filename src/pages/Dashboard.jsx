@@ -44,6 +44,7 @@ function Dashboard() {
   const [savingStore, setSavingStore] = useState(false)
   const [savingHub, setSavingHub] = useState(false)
   const [showHubSelector, setShowHubSelector] = useState(false)
+  const [copiedId, setCopiedId] = useState(null)
 
   // ============================================================
   // 🗂️ ESTADO: formularios
@@ -228,6 +229,15 @@ function Dashboard() {
   }
 
   // ============================================================
+  // 🔗 COPIAR LINK
+  // ============================================================
+  function handleCopyLink(productId) {
+    navigator.clipboard.writeText(`https://tianko.io/producto/${productId}`)
+    setCopiedId(productId)
+    setTimeout(() => setCopiedId(null), 2000)
+  }
+
+  // ============================================================
   // 📊 MÉTRICAS
   // ============================================================
   async function fetchMetrics(storeId) {
@@ -377,10 +387,17 @@ function Dashboard() {
           <h2 style={{ margin: 0 }}>{store.name}</h2>
           <p style={{ margin: 0, color: '#666', fontSize: 13 }}>Hola, {seller.name}</p>
         </div>
-        <button onClick={async () => { await supabase.auth.signOut(); window.location.href = '/' }}
-          style={{ background: 'none', border: '1px solid #ccc', padding: '6px 12px', borderRadius: 8, cursor: 'pointer' }}>
-          Salir
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <a href={`/tienda/${store.id}`} target="_blank" rel="noreferrer"
+            style={{ background: 'white', border: '1px solid #ccc', padding: '6px 12px',
+              borderRadius: 8, cursor: 'pointer', textDecoration: 'none', color: '#333', fontSize: 14 }}>
+            Ver mi tienda →
+          </a>
+          <button onClick={async () => { await supabase.auth.signOut(); window.location.href = '/' }}
+            style={{ background: 'none', border: '1px solid #ccc', padding: '6px 12px', borderRadius: 8, cursor: 'pointer' }}>
+            Salir
+          </button>
+        </div>
       </div>
 
       {/* MÉTRICAS */}
@@ -490,32 +507,47 @@ function Dashboard() {
           borderRadius: 12, padding: 12, marginBottom: 12, border: '1px solid #eee',
           alignItems: 'center', opacity: p.status === 'vendido' ? 0.6 : 1
         }}>
-          {p.image_url && (
-            <img src={p.image_url} alt={p.title}
-              style={{ width: 70, height: 70, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }} />
-          )}
-          <div style={{ flex: 1 }}>
-            <p style={{ margin: 0, fontWeight: 'bold', fontSize: 14 }}>{p.title}</p>
-            <p style={{ margin: 0, color: '#333' }}>${p.price}</p>
-            {p.status === 'vendido' && (
-              <span style={{ fontSize: 11, background: '#e0ffe0', color: '#2e7d32',
-                padding: '2px 6px', borderRadius: 4 }}>
-                ✓ Vendido
-              </span>
+          <a href={`/producto/${p.id}`} target="_blank" rel="noreferrer"
+            style={{ display: 'flex', gap: 12, flex: 1, alignItems: 'center',
+              textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+            {p.image_url && (
+              <img src={p.image_url} alt={p.title}
+                style={{ width: 70, height: 70, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }} />
             )}
-          </div>
+            <div style={{ flex: 1 }}>
+              <p style={{ margin: 0, fontWeight: 'bold', fontSize: 14 }}>{p.title}</p>
+              <p style={{ margin: 0, color: '#333' }}>${p.price}</p>
+              {p.status === 'vendido' && (
+                <span style={{ fontSize: 11, background: '#e0ffe0', color: '#2e7d32',
+                  padding: '2px 6px', borderRadius: 4 }}>
+                  ✓ Vendido
+                </span>
+              )}
+            </div>
+          </a>
 
-          {/* Botón marcar vendido */}
-          <button
-            onClick={() => handleMarkSold(p.id, p.status)}
-            style={{
-              background: p.status === 'vendido' ? '#f0f0f0' : '#000',
-              color: p.status === 'vendido' ? '#333' : 'white',
-              border: 'none', borderRadius: 8, padding: '6px 10px',
-              fontSize: 12, cursor: 'pointer', flexShrink: 0
-            }}>
-            {p.status === 'vendido' ? 'Reactivar' : '✓ Vendido'}
-          </button>
+          {/* Acciones */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
+            <button
+              onClick={() => handleMarkSold(p.id, p.status)}
+              style={{
+                background: p.status === 'vendido' ? '#f0f0f0' : '#000',
+                color: p.status === 'vendido' ? '#333' : 'white',
+                border: 'none', borderRadius: 8, padding: '6px 10px',
+                fontSize: 12, cursor: 'pointer'
+              }}>
+              {p.status === 'vendido' ? 'Reactivar' : '✓ Vendido'}
+            </button>
+            <button
+              onClick={() => handleCopyLink(p.id)}
+              style={{
+                background: '#f0f0f0', color: '#333',
+                border: 'none', borderRadius: 8, padding: '6px 10px',
+                fontSize: 12, cursor: 'pointer'
+              }}>
+              {copiedId === p.id ? '✓ Copiado' : 'Copiar link'}
+            </button>
+          </div>
         </div>
       ))}
 

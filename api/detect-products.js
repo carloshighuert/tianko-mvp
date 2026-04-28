@@ -53,25 +53,33 @@ export default async function handler(req, res) {
               },
               {
                 type: 'text',
-                text: `Eres un asistente para vendedores de tianguis en México.
-                
-Analiza esta foto de un puesto de mercado o tianguis y detecta todos los productos que se pueden vender.
+                text: `Eres un experto en identificar productos de segunda mano y antigüedades en tianguis mexicanos.
 
-Responde ÚNICAMENTE con un JSON válido, sin texto adicional, sin explicaciones, sin markdown:
+Analiza esta foto con MÁXIMA atención al detalle. Tu objetivo es detectar TODOS los objetos vendibles, incluso los que están parcialmente visibles o en los bordes.
+
+REGLAS DE DETECCIÓN:
+1. Recorre la imagen sistemáticamente: esquina superior izquierda → derecha → fila siguiente
+2. Cada objeto físico independiente = un producto separado
+3. Si dos piezas forman un SET (ej. funda + cinturón del mismo holster), cuéntalas como UN solo producto: "Pistolera con cinturón de cuero"
+4. Si dos piezas son INDEPENDIENTES aunque estén juntas (ej. dos relojes), lista cada una por separado
+5. No omitas objetos aunque estén parcialmente cubiertos o en orillas
+
+REGLAS DE NOMENCLATURA:
+- Sé específico con el material: "cuero", "cristal tallado", "porcelana", "madera"
+- Sé específico con el tipo: "vaso chupito", "charola", "reloj de mesa", "teléfono de disco"
+- Incluye color si ayuda a identificarlo: "vasito de porcelana azul cobalto"
+- Incluye época si es obvio: "cámara fotográfica vintage", "radio de transistores"
+- Máximo 5 palabras por nombre
+
+Responde ÚNICAMENTE con JSON válido, sin texto adicional, sin markdown:
 {
   "productos": [
-    "nombre del producto 1",
-    "nombre del producto 2",
-    "nombre del producto 3"
+    "nombre preciso del producto 1",
+    "nombre preciso del producto 2"
   ]
 }
 
-Reglas:
-- Máximo 10 productos
-- Nombres cortos y descriptivos (ej: "Perfume Chanel", "Bolsa de mano café", "Aretes dorados")
-- Solo productos que claramente se ven a la venta
-- En español
-- Si no puedes detectar productos, devuelve {"productos": []}`
+Si no detectas productos: {"productos": []}`
               }
             ]
           }
