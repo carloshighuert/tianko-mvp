@@ -91,6 +91,13 @@ function Store() {
           🛍️ Explorar todos los productos
         </button>
 
+        <p style={{ textAlign: 'center', marginTop: 24, fontSize: 12 }}>
+          ¿Eres vendedor?{' '}
+          <a href="/dashboard" style={{ color: '#888', textDecoration: 'underline' }}>
+            Ir a mi dashboard
+          </a>
+        </p>
+
       </div>
     </div>
   )

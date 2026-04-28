@@ -169,13 +169,21 @@ function Product() {
   }
 
   if (loading) return (
-    <p style={{ textAlign: 'center', padding: 20 }}>Cargando...</p>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#f4f4f4' }}>
+      <p style={{ color: '#666', fontSize: 15 }}>Cargando producto...</p>
+    </div>
   )
 
   if (!product) return (
-    <div style={{ textAlign: 'center', padding: 20 }}>
-      <p>Producto no encontrado</p>
-      <Link to="/">← Volver</Link>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#f4f4f4', padding: 24 }}>
+      <img src="/tianko-logo.png" alt="Tianko" style={{ height: 52, width: 'auto', marginBottom: 20 }} />
+      <p style={{ color: '#666', fontSize: 16, marginBottom: 16 }}>Producto no disponible</p>
+      <button onClick={() => navigate('/')} style={{
+        background: '#000', color: 'white', border: 'none', borderRadius: 10,
+        padding: '12px 24px', fontSize: 15, cursor: 'pointer'
+      }}>
+        🛍️ Explorar productos
+      </button>
     </div>
   )
 
@@ -295,6 +303,14 @@ function Product() {
           </div>
 
         </div>
+
+        <p style={{ textAlign: 'center', marginTop: 24, fontSize: 12 }}>
+          ¿Eres vendedor?{' '}
+          <a href="/dashboard" style={{ color: '#888', textDecoration: 'underline' }}>
+            Ir a mi dashboard
+          </a>
+        </p>
+
       </div>
     </div>
   )

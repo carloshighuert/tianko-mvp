@@ -249,7 +249,7 @@ function Home() {
                       <div style={{ padding: '8px 10px 10px' }}>
                         <p style={{
                           margin: 0,
-                          color: '#1a1a1a',
+                          color: '#111111',
                           fontWeight: 600,
                           fontSize: 14,
                           overflow: 'hidden',
@@ -258,11 +258,11 @@ function Home() {
                         }}>
                           {capitalize(p.title)}
                         </p>
-                        <p style={{ margin: '2px 0 0', color: '#111', fontWeight: 700, fontSize: 16 }}>
+                        <p style={{ margin: '2px 0 0', color: '#111111', fontWeight: 700, fontSize: 16 }}>
                           ${p.price}
                         </p>
                         {p.store?.name && (
-                          <p style={{ margin: '2px 0 0', color: '#666', fontSize: 12 }}>
+                          <p style={{ margin: '2px 0 0', color: '#444444', fontSize: 12 }}>
                             {p.store.name}
                           </p>
                         )}
