@@ -20,13 +20,16 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { Link } from 'react-router-dom'
 
-const capitalize = (str) => str ? str.charAt(0).toUpperCase() + str.slice(1) : ''
+const capitalize = (str) => {
+  if (!str) return ''
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
+}
 
 function Home() {
 
   const [hubs, setHubs] = useState([])
   const [products, setProducts] = useState([])
-  const [search, setSearch] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -89,13 +92,8 @@ function Home() {
   // ============================================================
   // Busca en productos Y en hubs simultáneamente
   const filteredProducts = products.filter(p =>
-    p.title?.toLowerCase().includes(search.toLowerCase()) ||
-    p.store?.name?.toLowerCase().includes(search.toLowerCase())
-  )
-
-  const filteredHubs = hubs.filter(h =>
-    h.name?.toLowerCase().includes(search.toLowerCase()) ||
-    h.location?.toLowerCase().includes(search.toLowerCase())
+    p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.category?.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   return (
@@ -138,8 +136,8 @@ function Home() {
         <input
           className="search-input"
           placeholder="🔍 Busca productos o tianguis..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           style={{
             width: '100%',
             padding: 14,
@@ -159,8 +157,8 @@ function Home() {
           <p style={{ textAlign: 'center', color: '#999' }}>Cargando...</p>
         ) : (
           <>
-            {/* ── SECCIÓN: TIANGUIS Y BAZARES ── siempre visible */}
-            {hubs.length > 0 && (
+            {/* ── SECCIÓN: TIANGUIS Y BAZARES ── oculta durante búsqueda */}
+            {hubs.length > 0 && !searchQuery && (
               <div style={{ marginBottom: 24 }}>
                 <h2 style={{ fontSize: 16, marginBottom: 12, color: '#333' }}>
                   📍 Tianguis y bazares
@@ -210,8 +208,10 @@ function Home() {
             </h2>
 
             {filteredProducts.length === 0 ? (
-              <p style={{ color: '#999', textAlign: 'center' }}>
-                No hay productos que coincidan con tu búsqueda.
+              <p style={{ textAlign: 'center', color: '#999', padding: 32 }}>
+                {searchQuery
+                  ? `No encontramos productos para "${searchQuery}"`
+                  : 'No hay productos disponibles.'}
               </p>
             ) : (
               <div style={{
