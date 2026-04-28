@@ -21,6 +21,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
+import BulkUpload from '../components/BulkUpload'
 
 function Dashboard() {
 
@@ -440,7 +441,7 @@ function Dashboard() {
           </div>
         )}
       </div>
-
+        <BulkUpload storeId={store.id} onComplete={() => fetchProducts(store.id)} />
       {/* FORMULARIO DE PRODUCTO */}
       <h3 style={{ marginBottom: 12 }}>Agregar producto</h3>
 
