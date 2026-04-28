@@ -399,7 +399,7 @@ function Dashboard() {
       {/* IDENTIDAD */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div>
-          <img src="/tianko-logo.png" alt="Tianko" style={{ height: 52, width: 'auto', display: 'block', marginBottom: 2 }} />
+          <img src="/tianko-logo.png" alt="Tianko" style={{ height: 64, width: 'auto', display: 'block', marginBottom: 2 }} />
           <p style={{ margin: 0, fontWeight: 'bold' }}>{store.name}</p>
           <p style={{ margin: 0, color: '#666', fontSize: 13 }}>Hola, {seller.name}</p>
         </div>

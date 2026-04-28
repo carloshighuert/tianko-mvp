@@ -110,7 +110,7 @@ function Home() {
           <img
             src="/tianko-logo.png"
             alt="Tianko"
-            style={{ height: 52, width: 'auto' }}
+            style={{ height: 64, width: 'auto' }}
             onError={(e) => console.log('Logo error:', e.target.src)}
           />
 

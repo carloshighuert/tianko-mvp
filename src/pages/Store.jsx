@@ -38,6 +38,8 @@ function Store() {
     <div style={{ background: '#f4f4f4', minHeight: '100vh', padding: 16 }}>
       <div style={{ maxWidth: 420, margin: '0 auto' }}>
 
+        <img src="/tianko-logo.png" alt="Tianko"
+          style={{ height: 64, width: 'auto', display: 'block', margin: '0 auto 16px' }} />
         <h2 style={{ textAlign: 'center' }}>{store.name}</h2>
 
         <button

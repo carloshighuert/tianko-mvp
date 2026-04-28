@@ -114,6 +114,9 @@ function MarketHub() {
     <div style={{ background: '#f4f4f4', minHeight: '100vh' }}>
       <div style={{ maxWidth: 500, margin: '0 auto', padding: 16 }}>
 
+        <img src="/tianko-logo.png" alt="Tianko"
+          style={{ height: 64, width: 'auto', display: 'block', marginBottom: 16 }} />
+
         {/* HEADER DEL HUB */}
         <div style={{
           background: '#000',
