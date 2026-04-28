@@ -229,6 +229,21 @@ function Dashboard() {
   }
 
   // ============================================================
+  // 🗑️ ELIMINAR PRODUCTO
+  // ============================================================
+  async function handleDeleteProduct(productId) {
+    if (!confirm('¿Eliminar este producto? Esta acción no se puede deshacer.')) return
+    try {
+      const { error } = await supabase.from('products').delete().eq('id', productId)
+      if (error) throw error
+      setProducts(prev => prev.filter(p => p.id !== productId))
+    } catch (err) {
+      console.error('[handleDeleteProduct]', err)
+      alert('Error al eliminar, intenta de nuevo')
+    }
+  }
+
+  // ============================================================
   // 🔗 COPIAR LINK
   // ============================================================
   function handleCopyLink(productId) {
@@ -546,6 +561,15 @@ function Dashboard() {
                 fontSize: 12, cursor: 'pointer'
               }}>
               {copiedId === p.id ? '✓ Copiado' : 'Copiar link'}
+            </button>
+            <button
+              onClick={() => handleDeleteProduct(p.id)}
+              style={{
+                background: '#fff0f0', color: '#c0392b',
+                border: 'none', borderRadius: 8, padding: '6px 10px',
+                fontSize: 14, cursor: 'pointer'
+              }}>
+              🗑️
             </button>
           </div>
         </div>
