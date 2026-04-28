@@ -45,6 +45,7 @@ function Dashboard() {
   const [savingHub, setSavingHub] = useState(false)
   const [showHubSelector, setShowHubSelector] = useState(false)
   const [copiedId, setCopiedId] = useState(null)
+  const [showOnboarding, setShowOnboarding] = useState(false)
 
   // ============================================================
   // 🗂️ ESTADO: formularios
@@ -347,6 +348,33 @@ function Dashboard() {
 
   if (loading) return (
     <div style={{ padding: 20, textAlign: 'center' }}><p>Cargando tu tienda...</p></div>
+  )
+
+  // ── ONBOARDING PASO 0: bienvenida ───────────────────────────
+  if (!seller && !showOnboarding) return (
+    <div style={{ textAlign: 'center', padding: '40px 24px', maxWidth: 400, margin: '0 auto' }}>
+      <img src="/tianko-logo.png" alt="Tianko"
+        style={{ height: 80, width: 'auto', marginBottom: 24 }} />
+      <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>
+        ¡Bienvenido a Tianko! 🎉
+      </h2>
+      <p style={{ color: '#555', fontSize: 15, marginBottom: 4 }}>
+        Tu tianguis, ahora digital
+      </p>
+      <p style={{ color: '#777', fontSize: 14, marginBottom: 32 }}>
+        En 2 minutos tendrás tu puesto listo para vender.
+      </p>
+      <button onClick={() => setShowOnboarding(true)} style={{
+        background: '#111', color: '#fff', border: 'none', borderRadius: 12,
+        padding: '14px 32px', fontSize: 16, fontWeight: 600, cursor: 'pointer', width: '100%'
+      }}>
+        Crear mi puesto →
+      </button>
+      <p style={{ marginTop: 16, fontSize: 13, color: '#999' }}>
+        ¿Solo quieres explorar?{' '}
+        <a href="/" style={{ color: '#666', marginLeft: 4 }}>Ver productos →</a>
+      </p>
+    </div>
   )
 
   // ── ONBOARDING PASO 1: seller ────────────────────────────────
