@@ -107,7 +107,7 @@ function Home() {
           alignItems: 'center',
           marginBottom: 16
         }}>
-          <h1 style={{ margin: 0, fontSize: 24 }}>Tianko</h1>
+          <img src="/tianko-logo.png" alt="Tianko" style={{ height: 36, width: 'auto' }} />
 
           <button
             onClick={() => {
