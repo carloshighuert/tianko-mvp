@@ -234,7 +234,10 @@ function Login() {
                   border: 'none',
                   outline: 'none',
                   fontSize: 18,
-                  letterSpacing: 1
+                  letterSpacing: 1,
+                  backgroundColor: '#ffffff',
+                  color: '#111111',
+                  WebkitTextFillColor: '#111111'
                 }}
               />
             </div>

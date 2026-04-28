@@ -18,13 +18,16 @@
 //      Agrega store_id al evento para métricas más precisas
 // ============================================================
 
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { QRCodeCanvas } from 'qrcode.react'
 
+const capitalize = (str) => str ? str.charAt(0).toUpperCase() + str.slice(1) : ''
+
 function Product() {
   const { id } = useParams()
+  const navigate = useNavigate()
 
   const [product, setProduct] = useState(null)
   const [store, setStore] = useState(null)
@@ -191,10 +194,10 @@ function Product() {
           alignItems: 'center',
           marginBottom: 16
         }}>
-          <Link to="/" style={{ textDecoration: 'none', color: '#000', fontWeight: 'bold', fontSize: 20 }}>
-            Tianko
+          <Link to="/">
+            <img src="/tianko-logo.png" alt="Tianko" style={{ height: 44, width: 'auto' }} />
           </Link>
-          <span style={{ fontSize: 12, color: '#666' }}>Marketplace local</span>
+          <span style={{ fontSize: 13, color: '#666', fontStyle: 'italic' }}>Tu tianguis, ahora digital</span>
         </div>
 
         {/* CARD */}
@@ -215,7 +218,7 @@ function Product() {
           )}
 
           {/* TÍTULO */}
-          <h2 style={{ margin: '0 0 4px' }}>{product.title}</h2>
+          <h2 style={{ margin: '0 0 4px' }}>{capitalize(product.title)}</h2>
 
           {/* TIENDA */}
           {store && (
@@ -229,6 +232,18 @@ function Product() {
               </Link>
             </div>
           )}
+          <button onClick={() => navigate('/')} style={{
+            background: 'none',
+            border: '1px solid #ddd',
+            borderRadius: 8,
+            padding: '10px 16px',
+            fontSize: 14,
+            cursor: 'pointer',
+            marginTop: 8,
+            width: '100%'
+          }}>
+            🛍️ Explorar todos los productos
+          </button>
 
           {/* PRECIO */}
           <p style={{ fontSize: 28, fontWeight: 'bold', margin: '8px 0' }}>

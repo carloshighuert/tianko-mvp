@@ -1,9 +1,12 @@
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 
+const capitalize = (str) => str ? str.charAt(0).toUpperCase() + str.slice(1) : ''
+
 function Store() {
   const { id } = useParams()
+  const navigate = useNavigate()
 
   const [store, setStore] = useState(null)
   const [products, setProducts] = useState([])
@@ -66,7 +69,7 @@ function Store() {
           }}>
             <img src={p.image_url} width="100%" />
 
-            <h4>{p.title}</h4>
+            <h4>{capitalize(p.title)}</h4>
             <p>${p.price}</p>
 
             <Link to={`/producto/${p.id}`}>
@@ -74,6 +77,19 @@ function Store() {
             </Link>
           </div>
         ))}
+
+        <button onClick={() => navigate('/')} style={{
+          background: 'none',
+          border: '1px solid #ddd',
+          borderRadius: 8,
+          padding: '10px 16px',
+          fontSize: 14,
+          cursor: 'pointer',
+          marginTop: 8,
+          width: '100%'
+        }}>
+          🛍️ Explorar todos los productos
+        </button>
 
       </div>
     </div>
