@@ -43,7 +43,9 @@ function Store() {
 
         <img src="/tianko-logo.png" alt="Tianko"
           style={{ height: 64, width: 'auto', display: 'block', margin: '0 auto 16px' }} />
-        <h2 style={{ textAlign: 'center' }}>{store.name}</h2>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#111', textAlign: 'center', margin: '0 0 16px' }}>
+          {store?.name}
+        </h1>
 
         <button
           onClick={handleWhatsApp}

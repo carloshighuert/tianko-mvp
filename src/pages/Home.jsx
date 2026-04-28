@@ -155,8 +155,8 @@ function Home() {
           <p style={{ textAlign: 'center', color: '#999' }}>Cargando...</p>
         ) : (
           <>
-            {/* ── SECCIÓN: TIANGUIS Y BAZARES ── */}
-            {filteredHubs.length > 0 && (
+            {/* ── SECCIÓN: TIANGUIS Y BAZARES ── siempre visible */}
+            {hubs.length > 0 && (
               <div style={{ marginBottom: 24 }}>
                 <h2 style={{ fontSize: 16, marginBottom: 12, color: '#333' }}>
                   📍 Tianguis y bazares
@@ -164,7 +164,7 @@ function Home() {
 
                 {/* Scroll horizontal de hubs */}
                 <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 8 }}>
-                  {filteredHubs.map(hub => (
+                  {hubs.map(hub => (
                     <Link
                       key={hub.id}
                       to={`/hub/${hub.id}`}
