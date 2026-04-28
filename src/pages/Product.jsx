@@ -224,17 +224,19 @@ function Product() {
           )}
 
           {/* TÍTULO */}
-          <h2 style={{ margin: '0 0 4px' }}>{capitalize(product?.title)}</h2>
+          <h2 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#111111', WebkitTextFillColor: '#111111' }}>
+            {capitalize(product?.title)}
+          </h2>
 
           {/* PRECIO */}
-          <p style={{ fontSize: 28, fontWeight: 'bold', margin: '8px 0' }}>
+          <p style={{ fontSize: 28, fontWeight: 800, color: '#111111', WebkitTextFillColor: '#111111', margin: '8px 0' }}>
             ${product?.price}
           </p>
 
           {/* TIENDA */}
           {store && (
             <div style={{ marginBottom: 12 }}>
-              <p style={{ margin: 0, color: '#666', fontSize: 14 }}>{store?.name}</p>
+              <p style={{ margin: 0, fontSize: 14, color: '#444444', WebkitTextFillColor: '#444444' }}>{store?.name}</p>
               <Link
                 to={`/tienda/${store?.id}`}
                 style={{ fontSize: 13, color: '#007bff', textDecoration: 'none' }}
