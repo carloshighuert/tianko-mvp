@@ -107,7 +107,12 @@ function Home() {
           alignItems: 'center',
           marginBottom: 16
         }}>
-          <img src="/tianko-logo.png" alt="Tianko" style={{ height: 36, width: 'auto' }} />
+          <img
+            src="/tianko-logo.png"
+            alt="Tianko"
+            style={{ height: 36, width: 'auto' }}
+            onError={(e) => console.log('Logo error:', e.target.src)}
+          />
 
           <button
             onClick={() => {

@@ -165,6 +165,8 @@ function Product() {
     }])
   }
 
+  console.log('Product data:', product, store)
+
   if (loading) return (
     <p style={{ textAlign: 'center', padding: 20 }}>Cargando...</p>
   )

@@ -180,9 +180,12 @@ function Login() {
       }}>
 
         {/* LOGO / MARCA */}
-        <h1 style={{ textAlign: 'center', marginBottom: 4, fontSize: 28 }}>
-          Tianko
-        </h1>
+        <img
+          src="/tianko-logo.png"
+          alt="Tianko"
+          style={{ height: 44, width: 'auto', marginBottom: 8, display: 'block', margin: '0 auto 8px' }}
+          onError={(e) => console.log('Logo error:', e.target.src)}
+        />
         <p style={{ textAlign: 'center', color: '#666', marginBottom: 32, fontSize: 14 }}>
           {step === 'phone'
             ? 'Ingresa tu número para entrar o registrarte'
