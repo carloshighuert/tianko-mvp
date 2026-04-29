@@ -90,10 +90,10 @@ function Home() {
   // ============================================================
   // 🔍 FILTRO DE BÚSQUEDA
   // ============================================================
-  // Busca en productos Y en hubs simultáneamente
+  const safeQuery = searchQuery.replace(/[<>"']/g, '')
   const filteredProducts = products.filter(p =>
-    p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.category?.toLowerCase().includes(searchQuery.toLowerCase())
+    p.title?.toLowerCase().includes(safeQuery.toLowerCase()) ||
+    p.category?.toLowerCase().includes(safeQuery.toLowerCase())
   )
 
   return (
@@ -210,7 +210,7 @@ function Home() {
             {filteredProducts.length === 0 ? (
               <p style={{ textAlign: 'center', color: '#999', padding: 32 }}>
                 {searchQuery
-                  ? `No encontramos productos para "${searchQuery}"`
+                  ? `No encontramos productos para "${safeQuery}"`
                   : 'No hay productos disponibles.'}
               </p>
             ) : (

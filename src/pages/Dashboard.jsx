@@ -306,6 +306,15 @@ function Dashboard() {
 
   async function uploadImage() {
     if (!file) return null
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic']
+    if (!allowedTypes.includes(file.type)) {
+      alert('Solo se permiten imágenes JPG, PNG o WEBP')
+      return null
+    }
+    if (file.size > 15 * 1024 * 1024) {
+      alert('La imagen es muy pesada, máximo 15MB')
+      return null
+    }
     try {
       const compressed = await compressImage(file)
       const fileName = `${store.id}/${Date.now()}.jpg`
@@ -325,6 +334,7 @@ function Dashboard() {
   // ============================================================
   async function createProduct() {
     if (!title || !price) { alert('Nombre y precio son obligatorios'); return }
+    if (isNaN(price) || parseFloat(price) <= 0) { alert('El precio debe ser mayor a $0'); return }
     if (uploading) return
     setUploading(true)
     try {
