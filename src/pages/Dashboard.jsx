@@ -46,6 +46,14 @@ function Dashboard() {
   const [showHubSelector, setShowHubSelector] = useState(false)
   const [copiedId, setCopiedId] = useState(null)
   const [showOnboarding, setShowOnboarding] = useState(false)
+  const [editingProduct, setEditingProduct] = useState(null)
+  const [editTitle, setEditTitle] = useState('')
+  const [editPrice, setEditPrice] = useState('')
+  const [editCategory, setEditCategory] = useState('')
+  const [editFile, setEditFile] = useState(null)
+  const [editPreview, setEditPreview] = useState(null)
+  const [savingEdit, setSavingEdit] = useState(false)
+  const [savedId, setSavedId] = useState(null)
 
   // ============================================================
   // 🗂️ ESTADO: formularios
@@ -242,6 +250,64 @@ function Dashboard() {
       console.error('[handleDeleteProduct]', err)
       alert('Error al eliminar, intenta de nuevo')
     }
+  }
+
+  // ============================================================
+  // ✏️ EDITAR PRODUCTO
+  // ============================================================
+  function handleOpenEdit(product) {
+    setEditingProduct(product)
+    setEditTitle(product.title || '')
+    setEditPrice(String(product.price || ''))
+    setEditCategory(product.category || '')
+    setEditFile(null)
+    setEditPreview(null)
+  }
+
+  async function handleSaveEdit() {
+    if (!editTitle || !editPrice) { alert('Nombre y precio son obligatorios'); return }
+    if (isNaN(editPrice) || parseFloat(editPrice) <= 0) { alert('El precio debe ser mayor a $0'); return }
+    setSavingEdit(true)
+    try {
+      let image_url = editingProduct.image_url
+
+      if (editFile) {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic']
+        if (!allowedTypes.includes(editFile.type)) {
+          alert('Solo se permiten imágenes JPG, PNG o WEBP'); setSavingEdit(false); return
+        }
+        if (editFile.size > 15 * 1024 * 1024) {
+          alert('La imagen es muy pesada, máximo 15MB'); setSavingEdit(false); return
+        }
+        const compressed = await compressImage(editFile)
+        const fileName = `${store.id}/${Date.now()}.jpg`
+        const { error: uploadError } = await supabase.storage
+          .from('products').upload(fileName, compressed, { contentType: 'image/jpeg', upsert: false })
+        if (uploadError) throw uploadError
+        const { data } = supabase.storage.from('products').getPublicUrl(fileName)
+        image_url = data.publicUrl
+      }
+
+      const { error } = await supabase
+        .from('products')
+        .update({ title: editTitle, price: parseFloat(editPrice), category: editCategory, image_url })
+        .eq('id', editingProduct.id)
+      if (error) throw error
+
+      setProducts(prev => prev.map(p =>
+        p.id === editingProduct.id
+          ? { ...p, title: editTitle, price: parseFloat(editPrice), category: editCategory, image_url }
+          : p
+      ))
+      const savedProductId = editingProduct.id
+      setEditingProduct(null)
+      setSavedId(savedProductId)
+      setTimeout(() => setSavedId(null), 2500)
+
+    } catch (err) {
+      console.error('[handleSaveEdit]', err)
+      alert('Error al guardar. Intenta de nuevo.')
+    } finally { setSavingEdit(false) }
   }
 
   // ============================================================
@@ -582,6 +648,18 @@ function Dashboard() {
 
           {/* Acciones */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
+            {savedId === p.id && (
+              <span style={{ fontSize: 11, color: '#2e7d32', textAlign: 'center' }}>✓ Actualizado</span>
+            )}
+            <button
+              onClick={() => handleOpenEdit(p)}
+              style={{
+                background: '#f0f0f0', color: '#333',
+                border: 'none', borderRadius: 8, padding: '6px 10px',
+                fontSize: 12, cursor: 'pointer'
+              }}>
+              ✏️ Editar
+            </button>
             <button
               onClick={() => handleMarkSold(p.id, p.status)}
               style={{
@@ -613,6 +691,63 @@ function Dashboard() {
           </div>
         </div>
       ))}
+
+      {/* MODAL DE EDICIÓN */}
+      {editingProduct && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1000, padding: 16
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: 16, padding: 24,
+            width: '100%', maxWidth: 420, boxSizing: 'border-box'
+          }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: 18 }}>Editar producto</h3>
+
+            {/* Preview imagen */}
+            {(editPreview || editingProduct.image_url) && (
+              <img src={editPreview || editingProduct.image_url} alt="preview"
+                style={{ width: '100%', height: 160, objectFit: 'cover', borderRadius: 10, marginBottom: 12 }} />
+            )}
+
+            {/* Cambiar foto */}
+            <label style={{ display: 'block', padding: 10, background: '#f0f0f0', borderRadius: 10,
+              textAlign: 'center', cursor: 'pointer', marginBottom: 12, fontSize: 14 }}>
+              {editFile ? '✅ Nueva foto lista' : '📸 Cambiar foto'}
+              <input type="file" accept="image/*" style={{ display: 'none' }}
+                onChange={(e) => {
+                  const f = e.target.files[0]
+                  if (!f) return
+                  setEditFile(f)
+                  setEditPreview(URL.createObjectURL(f))
+                }} />
+            </label>
+
+            <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)}
+              placeholder="Nombre del producto *"
+              style={{ width: '100%', padding: 12, marginBottom: 10, fontSize: 15, boxSizing: 'border-box', borderRadius: 8, border: '1px solid #ddd' }} />
+            <input value={editPrice} onChange={(e) => setEditPrice(e.target.value)}
+              placeholder="Precio *" type="number" inputMode="decimal"
+              style={{ width: '100%', padding: 12, marginBottom: 10, fontSize: 15, boxSizing: 'border-box', borderRadius: 8, border: '1px solid #ddd' }} />
+            <input value={editCategory} onChange={(e) => setEditCategory(e.target.value)}
+              placeholder="Categoría (opcional)"
+              style={{ width: '100%', padding: 12, marginBottom: 16, fontSize: 15, boxSizing: 'border-box', borderRadius: 8, border: '1px solid #ddd' }} />
+
+            <button onClick={handleSaveEdit} disabled={savingEdit}
+              style={{ width: '100%', padding: 14, background: savingEdit ? '#ccc' : '#000',
+                color: 'white', border: 'none', borderRadius: 10, fontSize: 16,
+                fontWeight: 'bold', marginBottom: 10, cursor: savingEdit ? 'not-allowed' : 'pointer' }}>
+              {savingEdit ? 'Guardando...' : 'Guardar cambios'}
+            </button>
+            <button onClick={() => setEditingProduct(null)} disabled={savingEdit}
+              style={{ width: '100%', padding: 12, background: 'none', border: '1px solid #ddd',
+                borderRadius: 10, fontSize: 15, cursor: 'pointer', color: '#666' }}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   )
