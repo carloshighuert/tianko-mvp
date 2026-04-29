@@ -1,0 +1,23 @@
+{
+  "name": "Tianko",
+  "short_name": "Tianko",
+  "description": "Tu tianguis, ahora digital",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#F5C518",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/tianko-favicon-32.png",
+      "sizes": "40x40",
+      "type": "image/png"
+    },
+    {
+      "src": "/tianko-logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
