@@ -277,6 +277,32 @@ function Product() {
             💬 Contactar vendedor
           </button>
 
+          {/* COMPARTIR — WhatsApp */}
+          <a
+            href={`https://wa.me/?text=${encodeURIComponent(
+              `🛍️ *${product?.title}* — $${product?.price}\n\nVe el producto aquí: https://tianko.io/producto/${product?.id}\n\n_Tu tianguis, ahora digital_ 🟡`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'block',
+              width: '100%',
+              padding: '14px',
+              marginTop: 10,
+              background: '#25D366',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 12,
+              fontSize: 15,
+              fontWeight: 600,
+              textAlign: 'center',
+              textDecoration: 'none',
+              boxSizing: 'border-box'
+            }}
+          >
+            📲 Compartir por WhatsApp
+          </a>
+
           {/* EXPLORAR */}
           <button onClick={() => navigate('/')} style={{
             background: 'none',
