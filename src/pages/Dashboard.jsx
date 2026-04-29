@@ -660,16 +660,35 @@ function Dashboard() {
               }}>
               ✏️ Editar
             </button>
-            <button
-              onClick={() => handleMarkSold(p.id, p.status)}
-              style={{
-                background: p.status === 'vendido' ? '#f0f0f0' : '#000',
-                color: p.status === 'vendido' ? '#333' : 'white',
-                border: 'none', borderRadius: 8, padding: '6px 10px',
-                fontSize: 12, cursor: 'pointer'
-              }}>
-              {p.status === 'vendido' ? 'Reactivar' : '✓ Vendido'}
-            </button>
+            {p.status === 'vendido' ? (
+              <>
+                <span style={{
+                  background: '#e8f5e9', color: '#2e7d32',
+                  borderRadius: 6, padding: '4px 8px',
+                  fontSize: 12, fontWeight: 600
+                }}>
+                  ✓ Vendido
+                </span>
+                <button
+                  onClick={() => handleMarkSold(p.id, p.status)}
+                  style={{
+                    background: 'white', color: '#333', border: '1px solid #ccc',
+                    borderRadius: 8, padding: '6px 12px', fontSize: 12,
+                    cursor: 'pointer', marginTop: 4
+                  }}>
+                  Reactivar
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => handleMarkSold(p.id, p.status)}
+                style={{
+                  background: 'white', color: '#666', border: '1px solid #ddd',
+                  borderRadius: 8, padding: '6px 12px', fontSize: 12, cursor: 'pointer'
+                }}>
+                Marcar como vendido
+              </button>
+            )}
             <button
               onClick={() => handleCopyLink(p.id)}
               style={{
