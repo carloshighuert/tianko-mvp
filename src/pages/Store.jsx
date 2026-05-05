@@ -10,24 +10,22 @@ function Store() {
 
   const [store, setStore] = useState(null)
   const [products, setProducts] = useState([])
+  const [reviews, setReviews] = useState([])
 
   useEffect(() => {
     fetchData()
   }, [id])
 
   async function fetchData() {
-    const { data: storeData } = await supabase
-      .from('stores')
-      .select('*')
-      .eq('id', id)
-
-    const { data: productsData } = await supabase
-      .from('products')
-      .select('*')
-      .eq('store_id', id)
-
-    setStore(storeData?.[0])
-    setProducts(productsData || [])
+    const [storeRes, productsRes, reviewsRes] = await Promise.all([
+      supabase.from('stores').select('*').eq('id', id),
+      supabase.from('products').select('*').eq('store_id', id),
+      supabase.from('reviews').select('*').eq('store_id', id)
+        .eq('used', true).not('rating', 'is', null)
+    ])
+    setStore(storeRes.data?.[0])
+    setProducts(productsRes.data || [])
+    setReviews(reviewsRes.data || [])
   }
 
   function handleWhatsApp() {
@@ -43,9 +41,16 @@ function Store() {
 
         <img src="/tianko-logo.png" alt="Tianko"
           style={{ height: 74, width: 'auto', display: 'block', margin: '0 auto 16px' }} />
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#111', textAlign: 'center', margin: '0 0 16px' }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#111', textAlign: 'center', margin: '0 0 8px' }}>
           {store?.name}
         </h1>
+
+        {/* CALIFICACIÓN */}
+        <p style={{ textAlign: 'center', fontSize: 15, color: '#555', marginBottom: 16 }}>
+          {reviews.length > 0
+            ? `⭐ ${(reviews.reduce((a, b) => a + b.rating, 0) / reviews.length).toFixed(1)} (${reviews.length} reseña${reviews.length !== 1 ? 's' : ''})`
+            : 'Sin reseñas aún'}
+        </p>
 
         <button
           onClick={handleWhatsApp}
@@ -79,6 +84,24 @@ function Store() {
             </Link>
           </div>
         ))}
+
+        {/* RESEÑAS */}
+        {reviews.length > 0 && (
+          <div style={{ marginBottom: 24 }}>
+            <h3 style={{ fontSize: 15, marginBottom: 12 }}>Reseñas de compradores</h3>
+            {reviews.map(r => (
+              <div key={r.id} style={{ background: '#f9f9f9', borderRadius: 10, padding: 12, marginBottom: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontWeight: 600 }}>{r.buyer_name}</span>
+                  <span>{'⭐'.repeat(r.rating)}</span>
+                </div>
+                {r.comment && (
+                  <p style={{ color: '#555', fontSize: 13, margin: '4px 0 0' }}>{r.comment}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
 
         <button onClick={() => navigate('/')} style={{
           background: 'none',

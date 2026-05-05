@@ -31,7 +31,8 @@ function Product() {
 
   const [product, setProduct] = useState(null)
   const [store, setStore] = useState(null)
-  const [socialProof, setSocialProof] = useState(null) // nuevo
+  const [socialProof, setSocialProof] = useState(null)
+  const [storeRating, setStoreRating] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -63,6 +64,18 @@ function Product() {
         .single()
 
       setStore(storeData || null)
+
+      // Rating de la tienda
+      if (productData.store_id) {
+        const { data: reviewsData } = await supabase
+          .from('reviews').select('rating')
+          .eq('store_id', productData.store_id)
+          .eq('used', true).not('rating', 'is', null)
+        if (reviewsData?.length) {
+          const avg = reviewsData.reduce((a, b) => a + b.rating, 0) / reviewsData.length
+          setStoreRating({ avg: avg.toFixed(1), count: reviewsData.length })
+        }
+      }
 
       // Cargar prueba social después de tener el producto
       fetchSocialProof(id)
@@ -236,7 +249,9 @@ function Product() {
           {/* TIENDA */}
           {store && (
             <div style={{ marginBottom: 12 }}>
-              <p style={{ margin: 0, fontSize: 14, color: '#444444', WebkitTextFillColor: '#444444' }}>{store?.name}</p>
+              <p style={{ margin: 0, fontSize: 14, color: '#444444', WebkitTextFillColor: '#444444' }}>
+                {storeRating ? `⭐ ${storeRating.avg} · ${store?.name}` : store?.name}
+              </p>
               <Link
                 to={`/tienda/${store?.id}`}
                 style={{ fontSize: 13, color: '#007bff', textDecoration: 'none' }}

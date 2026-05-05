@@ -12,6 +12,7 @@ import Store from './pages/Store'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import MarketHub from './pages/MarketHub'
+import Review from './pages/Review'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
         <Route path="/producto/:id" element={<Product />} />
         <Route path="/tienda/:id" element={<Store />} />
         <Route path="/hub/:id" element={<MarketHub />} />
+        <Route path="/resena/:token" element={<Review />} />
 
         {/* 🔐 AUTH */}
         <Route path="/login" element={<Login />} />

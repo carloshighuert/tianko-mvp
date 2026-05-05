@@ -46,6 +46,7 @@ function Dashboard() {
   const [showHubSelector, setShowHubSelector] = useState(false)
   const [copiedId, setCopiedId] = useState(null)
   const [showOnboarding, setShowOnboarding] = useState(false)
+  const [reviewCopiedId, setReviewCopiedId] = useState(null)
   const [editingProduct, setEditingProduct] = useState(null)
   const [editTitle, setEditTitle] = useState('')
   const [editPrice, setEditPrice] = useState('')
@@ -249,6 +250,31 @@ function Dashboard() {
     } catch (err) {
       console.error('[handleDeleteProduct]', err)
       alert('Error al eliminar, intenta de nuevo')
+    }
+  }
+
+  // ============================================================
+  // ⭐ PEDIR RESEÑA
+  // ============================================================
+  async function handleRequestReview(product) {
+    const token = Math.random().toString(36).substring(2, 15)
+    try {
+      const { error } = await supabase.from('reviews').insert([{
+        store_id: store.id,
+        product_id: product.id,
+        token,
+        buyer_name: 'pendiente',
+        rating: null,
+        used: false
+      }])
+      if (error) throw error
+      const link = `https://tianko.io/resena/${token}`
+      await navigator.clipboard.writeText(link)
+      setReviewCopiedId(product.id)
+      setTimeout(() => setReviewCopiedId(null), 3000)
+    } catch (err) {
+      console.error('[handleRequestReview]', err)
+      alert('Error al generar el link. Intenta de nuevo.')
     }
   }
 
@@ -677,6 +703,15 @@ function Dashboard() {
                     cursor: 'pointer', marginTop: 4
                   }}>
                   Reactivar
+                </button>
+                <button
+                  onClick={() => handleRequestReview(p)}
+                  style={{
+                    background: reviewCopiedId === p.id ? '#fff9e6' : '#fffbf0',
+                    color: '#b8860b', border: '1px solid #f0d060',
+                    borderRadius: 8, padding: '6px 10px', fontSize: 12, cursor: 'pointer'
+                  }}>
+                  {reviewCopiedId === p.id ? '✓ Link copiado' : '⭐ Pedir reseña'}
                 </button>
               </>
             ) : (
