@@ -73,15 +73,54 @@ function TabTiendas({ hubs }) {
   const [stores, setStores] = useState([])
   const [loadingStores, setLoadingStores] = useState(true)
 
+  const [editingId, setEditingId] = useState(null)
+  const [editStoreName, setEditStoreName] = useState('')
+  const [editStoreDesc, setEditStoreDesc] = useState('')
+  const [editStoreWA, setEditStoreWA] = useState('')
+  const [editStoreHub, setEditStoreHub] = useState('')
+  const [savingEdit, setSavingEdit] = useState(false)
+
   useEffect(() => { fetchStores() }, [])
 
   async function fetchStores() {
     const { data } = await supabase
       .from('stores')
-      .select('id, name, whatsapp_number, seller_id, hub_id, sellers(name), market_hubs(name)')
+      .select('id, name, description, whatsapp_number, seller_id, hub_id, sellers(name), market_hubs(name)')
       .order('created_at', { ascending: false })
     setStores(data || [])
     setLoadingStores(false)
+  }
+
+  function startEditStore(s) {
+    setEditingId(s.id)
+    setEditStoreName(s.name || '')
+    setEditStoreDesc(s.description || '')
+    setEditStoreWA(s.whatsapp_number || '')
+    setEditStoreHub(s.hub_id || '')
+  }
+
+  function cancelEditStore() { setEditingId(null) }
+
+  async function handleSaveEditStore(storeId) {
+    if (!editStoreName.trim()) { alert('Nombre es obligatorio'); return }
+    setSavingEdit(true)
+    try {
+      const { error } = await supabase
+        .from('stores')
+        .update({
+          name: editStoreName.trim(),
+          description: editStoreDesc.trim() || null,
+          whatsapp_number: editStoreWA.replace(/\D/g, ''),
+          hub_id: editStoreHub || null
+        })
+        .eq('id', storeId)
+      if (error) throw error
+      setEditingId(null)
+      fetchStores()
+    } catch (err) {
+      console.error('[handleSaveEditStore]', err)
+      alert(`Error: ${err.message}`)
+    } finally { setSavingEdit(false) }
   }
 
   async function handleDeleteStore(s) {
@@ -183,24 +222,42 @@ function TabTiendas({ hubs }) {
         <p style={sectionTitle}>Tiendas existentes ({stores.length})</p>
         {loadingStores ? <p style={{ color: '#999', fontSize: 14 }}>Cargando...</p> : (
           stores.map(s => (
-            <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: '10px 0', borderBottom: '1px solid #f0f0f0', gap: 8 }}>
-              <div style={{ minWidth: 0 }}>
-                <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: '#111' }}>{s.name}</p>
-                <p style={{ margin: 0, fontSize: 12, color: '#666' }}>
-                  {s.sellers?.name} · {s.market_hubs?.name || 'Sin tianguis'}
-                </p>
-              </div>
-              <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                <a href={`/tienda/${s.id}`} target="_blank" rel="noreferrer"
-                  style={{ fontSize: 12, color: '#007bff', whiteSpace: 'nowrap' }}>
-                  Ver →
-                </a>
-                <button onClick={() => handleDeleteStore(s)}
-                  style={{ background: 'none', border: '1px solid #fcc', borderRadius: 6, padding: '2px 8px', fontSize: 12, color: '#c0392b', cursor: 'pointer' }}>
-                  🗑️
-                </button>
-              </div>
+            <div key={s.id} style={{ padding: '10px 0', borderBottom: '1px solid #f0f0f0' }}>
+              {editingId === s.id ? (
+                <div>
+                  <input style={{ ...inputStyle, marginBottom: 8 }} placeholder="Nombre *" value={editStoreName} onChange={e => setEditStoreName(e.target.value)} />
+                  <input style={{ ...inputStyle, marginBottom: 8 }} placeholder="Descripción" value={editStoreDesc} onChange={e => setEditStoreDesc(e.target.value)} />
+                  <input style={{ ...inputStyle, marginBottom: 8 }} placeholder="WhatsApp" value={editStoreWA} onChange={e => setEditStoreWA(e.target.value)} type="tel" />
+                  <select value={editStoreHub} onChange={e => setEditStoreHub(e.target.value)} style={{ ...inputStyle, appearance: 'auto', marginBottom: 8 }}>
+                    <option value="">Sin tianguis asignado</option>
+                    {hubs.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+                  </select>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={cancelEditStore} style={{ flex: 1, padding: 10, background: 'none', border: '1px solid #ddd', borderRadius: 8, cursor: 'pointer', fontSize: 14 }}>Cancelar</button>
+                    <button onClick={() => handleSaveEditStore(s.id)} disabled={savingEdit}
+                      style={{ flex: 2, padding: 10, background: '#111', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 14, fontWeight: 700, opacity: savingEdit ? 0.6 : 1 }}>
+                      {savingEdit ? 'Guardando...' : 'Guardar'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: '#111' }}>{s.name}</p>
+                    <p style={{ margin: 0, fontSize: 12, color: '#666' }}>
+                      {s.sellers?.name} · {s.market_hubs?.name || 'Sin tianguis'}
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                    <a href={`/tienda/${s.id}`} target="_blank" rel="noreferrer"
+                      style={{ fontSize: 12, color: '#007bff', whiteSpace: 'nowrap' }}>Ver →</a>
+                    <button onClick={() => startEditStore(s)}
+                      style={{ background: 'none', border: '1px solid #ddd', borderRadius: 6, padding: '2px 8px', fontSize: 12, color: '#555', cursor: 'pointer' }}>✏️</button>
+                    <button onClick={() => handleDeleteStore(s)}
+                      style={{ background: 'none', border: '1px solid #fcc', borderRadius: 6, padding: '2px 8px', fontSize: 12, color: '#c0392b', cursor: 'pointer' }}>🗑️</button>
+                  </div>
+                </div>
+              )}
             </div>
           ))
         )}
@@ -224,6 +281,14 @@ function TabProductos({ hubs }) {
   const [products, setProducts] = useState([])
   const [loadingProducts, setLoadingProducts] = useState(true)
 
+  const [editingId, setEditingId] = useState(null)
+  const [editTitle, setEditTitle] = useState('')
+  const [editPrice, setEditPrice] = useState('')
+  const [editCategory, setEditCategory] = useState('')
+  const [editFile, setEditFile] = useState(null)
+  const [editPreview, setEditPreview] = useState(null)
+  const [savingEdit, setSavingEdit] = useState(false)
+
   useEffect(() => {
     fetchStores()
     fetchRecentProducts()
@@ -240,11 +305,53 @@ function TabProductos({ hubs }) {
   async function fetchRecentProducts() {
     const { data } = await supabase
       .from('products')
-      .select('id, title, price, store_id, created_at, stores(name)')
+      .select('id, title, price, category, image_url, store_id, created_at, stores(name)')
       .order('created_at', { ascending: false })
       .limit(20)
     setProducts(data || [])
     setLoadingProducts(false)
+  }
+
+  function startEditProduct(p) {
+    setEditingId(p.id)
+    setEditTitle(p.title || '')
+    setEditPrice(String(p.price || ''))
+    setEditCategory(p.category || '')
+    setEditFile(null)
+    setEditPreview(null)
+  }
+
+  function cancelEditProduct() { setEditingId(null) }
+
+  async function handleSaveEditProduct(p) {
+    if (!editTitle.trim() || !editPrice) { alert('Título y precio son obligatorios'); return }
+    if (isNaN(editPrice) || parseFloat(editPrice) <= 0) { alert('El precio debe ser mayor a $0'); return }
+    setSavingEdit(true)
+    try {
+      let image_url = p.image_url
+      if (editFile) {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic']
+        if (!allowedTypes.includes(editFile.type)) { alert('Solo JPG, PNG o WEBP'); setSavingEdit(false); return }
+        if (editFile.size > 15 * 1024 * 1024) { alert('Máximo 15MB'); setSavingEdit(false); return }
+        const compressed = await compressImage(editFile)
+        const fileName = `${p.store_id}/${Date.now()}.jpg`
+        const { error: uploadErr } = await supabase.storage
+          .from('products').upload(fileName, compressed, { contentType: 'image/jpeg', upsert: false })
+        if (uploadErr) throw uploadErr
+        const { data: urlData } = supabase.storage.from('products').getPublicUrl(fileName)
+        image_url = urlData.publicUrl
+      }
+      const { error } = await supabase
+        .from('products')
+        .update({ title: editTitle.trim(), price: parseFloat(editPrice), category: editCategory.trim() || null, image_url })
+        .eq('id', p.id)
+      if (error) throw error
+      setEditingId(null)
+      fetchRecentProducts()
+    } catch (err) {
+      console.error('[handleSaveEditProduct]', err)
+      alert(`Error: ${err.message}`)
+    } finally { setSavingEdit(false) }
   }
 
   async function handleDeleteProduct(p) {
@@ -362,22 +469,45 @@ function TabProductos({ hubs }) {
         <p style={sectionTitle}>Últimos 20 productos</p>
         {loadingProducts ? <p style={{ color: '#999', fontSize: 14 }}>Cargando...</p> : (
           products.map(p => (
-            <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: '8px 0', borderBottom: '1px solid #f0f0f0', gap: 8 }}>
-              <div style={{ minWidth: 0 }}>
-                <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#111' }}>{p.title}</p>
-                <p style={{ margin: 0, fontSize: 12, color: '#666' }}>${p.price} · {p.stores?.name}</p>
-              </div>
-              <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                <a href={`/producto/${p.id}`} target="_blank" rel="noreferrer"
-                  style={{ fontSize: 12, color: '#007bff', whiteSpace: 'nowrap' }}>
-                  Ver →
-                </a>
-                <button onClick={() => handleDeleteProduct(p)}
-                  style={{ background: 'none', border: '1px solid #fcc', borderRadius: 6, padding: '2px 8px', fontSize: 12, color: '#c0392b', cursor: 'pointer' }}>
-                  🗑️
-                </button>
-              </div>
+            <div key={p.id} style={{ padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
+              {editingId === p.id ? (
+                <div>
+                  <label style={{ display: 'block', padding: '8px', borderRadius: 8, border: '1px dashed #aaa',
+                    textAlign: 'center', cursor: 'pointer', marginBottom: 8, fontSize: 13, color: '#555' }}>
+                    {editPreview
+                      ? <img src={editPreview} alt="preview" style={{ width: '100%', maxHeight: 120, objectFit: 'cover', borderRadius: 6 }} />
+                      : (p.image_url
+                          ? <img src={p.image_url} alt="actual" style={{ width: '100%', maxHeight: 120, objectFit: 'cover', borderRadius: 6, opacity: 0.6 }} />
+                          : '📷 Seleccionar nueva imagen (opcional)')}
+                    <input type="file" accept="image/*" onChange={e => { const f = e.target.files[0]; if (f) { setEditFile(f); setEditPreview(URL.createObjectURL(f)) } }} style={{ display: 'none' }} />
+                  </label>
+                  <input style={{ ...inputStyle, marginBottom: 8 }} placeholder="Título *" value={editTitle} onChange={e => setEditTitle(e.target.value)} />
+                  <input style={{ ...inputStyle, marginBottom: 8 }} placeholder="Precio *" value={editPrice} onChange={e => setEditPrice(e.target.value)} type="number" inputMode="decimal" />
+                  <input style={{ ...inputStyle, marginBottom: 8 }} placeholder="Categoría" value={editCategory} onChange={e => setEditCategory(e.target.value)} />
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={cancelEditProduct} style={{ flex: 1, padding: 10, background: 'none', border: '1px solid #ddd', borderRadius: 8, cursor: 'pointer', fontSize: 14 }}>Cancelar</button>
+                    <button onClick={() => handleSaveEditProduct(p)} disabled={savingEdit}
+                      style={{ flex: 2, padding: 10, background: '#111', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 14, fontWeight: 700, opacity: savingEdit ? 0.6 : 1 }}>
+                      {savingEdit ? 'Guardando...' : 'Guardar'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#111' }}>{p.title}</p>
+                    <p style={{ margin: 0, fontSize: 12, color: '#666' }}>${p.price} · {p.stores?.name}</p>
+                  </div>
+                  <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                    <a href={`/producto/${p.id}`} target="_blank" rel="noreferrer"
+                      style={{ fontSize: 12, color: '#007bff', whiteSpace: 'nowrap' }}>Ver →</a>
+                    <button onClick={() => startEditProduct(p)}
+                      style={{ background: 'none', border: '1px solid #ddd', borderRadius: 6, padding: '2px 8px', fontSize: 12, color: '#555', cursor: 'pointer' }}>✏️</button>
+                    <button onClick={() => handleDeleteProduct(p)}
+                      style={{ background: 'none', border: '1px solid #fcc', borderRadius: 6, padding: '2px 8px', fontSize: 12, color: '#c0392b', cursor: 'pointer' }}>🗑️</button>
+                  </div>
+                </div>
+              )}
             </div>
           ))
         )}
