@@ -257,9 +257,12 @@ function Dashboard() {
   // ⭐ PEDIR RESEÑA
   // ============================================================
   async function handleRequestReview(product) {
-    const token = Math.random().toString(36).substring(2, 15)
     try {
-      const { error } = await supabase.from('reviews').insert([{
+      console.log('Generando reseña para:', product.id, store.id)
+      const token = Math.random().toString(36).substring(2, 15)
+      console.log('Token generado:', token)
+
+      const { data, error } = await supabase.from('reviews').insert([{
         store_id: store.id,
         product_id: product.id,
         token,
@@ -267,13 +270,16 @@ function Dashboard() {
         rating: null,
         used: false
       }])
+
+      console.log('Resultado insert:', data, error)
+
       if (error) throw error
       const link = `https://tianko.io/resena/${token}`
       await navigator.clipboard.writeText(link)
       setReviewCopiedId(product.id)
       setTimeout(() => setReviewCopiedId(null), 3000)
     } catch (err) {
-      console.error('[handleRequestReview]', err)
+      console.error('Error completo:', err)
       alert('Error al generar el link. Intenta de nuevo.')
     }
   }
