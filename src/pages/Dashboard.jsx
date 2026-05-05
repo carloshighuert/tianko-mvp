@@ -46,6 +46,7 @@ function Dashboard() {
   const [showHubSelector, setShowHubSelector] = useState(false)
   const [copiedId, setCopiedId] = useState(null)
   const [showOnboarding, setShowOnboarding] = useState(false)
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [reviewCopiedId, setReviewCopiedId] = useState(null)
   const [editingProduct, setEditingProduct] = useState(null)
   const [editTitle, setEditTitle] = useState('')
@@ -495,10 +496,24 @@ function Dashboard() {
         style={{ width: '100%', padding: 12, marginBottom: 10, fontSize: 16, boxSizing: 'border-box' }} />
       <input placeholder="Tu teléfono (10 dígitos) *" value={sellerPhone}
         onChange={(e) => setSellerPhone(e.target.value)} type="tel"
-        style={{ width: '100%', padding: 12, marginBottom: 20, fontSize: 16, boxSizing: 'border-box' }} />
-      <button onClick={handleCreateSeller} disabled={savingSeller}
-        style={{ width: '100%', padding: 14, background: savingSeller ? '#ccc' : '#000',
-          color: 'white', border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 'bold' }}>
+        style={{ width: '100%', padding: 12, marginBottom: 16, fontSize: 16, boxSizing: 'border-box' }} />
+      <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start',
+        fontSize: 13, color: '#555', marginBottom: 16, cursor: 'pointer' }}>
+        <input type="checkbox"
+          checked={acceptedTerms}
+          onChange={(e) => setAcceptedTerms(e.target.checked)}
+          style={{ marginTop: 2 }} />
+        <span>
+          Acepto que soy responsable de los productos que publico.
+          Me comprometo a no vender artículos ilegales, robados o
+          falsificados. Entiendo que Tianko puede eliminar mi cuenta
+          si incumplo estas reglas.
+        </span>
+      </label>
+      <button onClick={handleCreateSeller} disabled={savingSeller || !acceptedTerms}
+        style={{ width: '100%', padding: 14, background: savingSeller || !acceptedTerms ? '#ccc' : '#000',
+          color: 'white', border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 'bold',
+          cursor: !acceptedTerms ? 'not-allowed' : 'pointer' }}>
         {savingSeller ? 'Guardando...' : 'Continuar →'}
       </button>
     </div>

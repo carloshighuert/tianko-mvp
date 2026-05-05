@@ -15,10 +15,12 @@ import MarketHub from './pages/MarketHub'
 import Review from './pages/Review'
 import Admin from './pages/Admin'
 import ProtectedRoute from './components/ProtectedRoute'
+import Disclaimer from './components/Disclaimer'
 
 function App() {
   return (
     <Router>
+      <Disclaimer />
       <Routes>
 
         {/* 🌍 PÚBLICO */}

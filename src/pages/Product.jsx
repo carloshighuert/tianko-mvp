@@ -162,6 +162,17 @@ function Product() {
   // ============================================================
   // 💬 CLICK A WHATSAPP
   // ============================================================
+  const handleWhatsAppClick = async () => {
+    try {
+      await supabase.from('lead_events').insert({
+        type: 'click_whatsapp',
+        product_id: product.id
+      })
+    } catch (err) {
+      console.error('Error registrando evento:', err)
+    }
+  }
+
   function handleWhatsApp() {
     const phone = store?.whatsapp_number
 
@@ -172,13 +183,8 @@ function Product() {
 
     const message = `Hola 👋 vi este producto en Tianko:\n\n🛍️ ${product.title}\n💰 $${product.price}\n\n¿Sigue disponible?`
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+    handleWhatsAppClick() // fire-and-forget
     window.open(url, '_blank')
-
-    // Registrar click
-    supabase.from('lead_events').insert([{
-      type: 'click_whatsapp',
-      product_id: product.id
-    }])
   }
 
   if (loading) return (
@@ -297,6 +303,7 @@ function Product() {
             href={`https://wa.me/?text=${encodeURIComponent(
               `🛍️ *${product?.title}* — $${product?.price}\n\nVe el producto aquí: https://tianko.io/producto/${product?.id}\n\n_Tu tianguis, ahora digital_ 🟡`
             )}`}
+            onClick={handleWhatsAppClick}
             target="_blank"
             rel="noopener noreferrer"
             style={{

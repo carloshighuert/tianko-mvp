@@ -84,6 +84,19 @@ function TabTiendas({ hubs }) {
     setLoadingStores(false)
   }
 
+  async function handleDeleteStore(s) {
+    if (!confirm(`¿Eliminar tienda "${s.name}" y todos sus productos? Esta acción no se puede deshacer.`)) return
+    try {
+      await supabase.from('products').delete().eq('store_id', s.id)
+      await supabase.from('stores').delete().eq('id', s.id)
+      if (s.seller_id) await supabase.from('sellers').delete().eq('id', s.seller_id)
+      fetchStores()
+    } catch (err) {
+      console.error('[handleDeleteStore]', err)
+      alert(`Error: ${err.message}`)
+    }
+  }
+
   async function handleCreate() {
     if (!sellerName.trim() || !sellerPhone.trim() || !storeName.trim()) {
       alert('Nombre del vendedor, teléfono y nombre de tienda son obligatorios')
@@ -178,10 +191,16 @@ function TabTiendas({ hubs }) {
                   {s.sellers?.name} · {s.market_hubs?.name || 'Sin tianguis'}
                 </p>
               </div>
-              <a href={`/tienda/${s.id}`} target="_blank" rel="noreferrer"
-                style={{ fontSize: 12, color: '#007bff', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                Ver →
-              </a>
+              <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                <a href={`/tienda/${s.id}`} target="_blank" rel="noreferrer"
+                  style={{ fontSize: 12, color: '#007bff', whiteSpace: 'nowrap' }}>
+                  Ver →
+                </a>
+                <button onClick={() => handleDeleteStore(s)}
+                  style={{ background: 'none', border: '1px solid #fcc', borderRadius: 6, padding: '2px 8px', fontSize: 12, color: '#c0392b', cursor: 'pointer' }}>
+                  🗑️
+                </button>
+              </div>
             </div>
           ))
         )}
@@ -226,6 +245,18 @@ function TabProductos({ hubs }) {
       .limit(20)
     setProducts(data || [])
     setLoadingProducts(false)
+  }
+
+  async function handleDeleteProduct(p) {
+    if (!confirm(`¿Eliminar "${p.title}"?`)) return
+    try {
+      const { error } = await supabase.from('products').delete().eq('id', p.id)
+      if (error) throw error
+      fetchRecentProducts()
+    } catch (err) {
+      console.error('[handleDeleteProduct]', err)
+      alert(`Error: ${err.message}`)
+    }
   }
 
   function handleFileSelect(f) {
@@ -337,10 +368,16 @@ function TabProductos({ hubs }) {
                 <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#111' }}>{p.title}</p>
                 <p style={{ margin: 0, fontSize: 12, color: '#666' }}>${p.price} · {p.stores?.name}</p>
               </div>
-              <a href={`/producto/${p.id}`} target="_blank" rel="noreferrer"
-                style={{ fontSize: 12, color: '#007bff', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                Ver →
-              </a>
+              <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                <a href={`/producto/${p.id}`} target="_blank" rel="noreferrer"
+                  style={{ fontSize: 12, color: '#007bff', whiteSpace: 'nowrap' }}>
+                  Ver →
+                </a>
+                <button onClick={() => handleDeleteProduct(p)}
+                  style={{ background: 'none', border: '1px solid #fcc', borderRadius: 6, padding: '2px 8px', fontSize: 12, color: '#c0392b', cursor: 'pointer' }}>
+                  🗑️
+                </button>
+              </div>
             </div>
           ))
         )}
@@ -365,6 +402,18 @@ function TabHubs({ hubs, onHubsChange }) {
   const [editSchedule, setEditSchedule] = useState('')
   const [editType, setEditType] = useState('tianguis')
   const [savingEdit, setSavingEdit] = useState(false)
+
+  async function handleDeleteHub(hub) {
+    if (!confirm(`¿Eliminar el tianguis "${hub.name}"?`)) return
+    try {
+      const { error } = await supabase.from('market_hubs').delete().eq('id', hub.id)
+      if (error) throw error
+      await onHubsChange()
+    } catch (err) {
+      console.error('[handleDeleteHub]', err)
+      alert(`Error: ${err.message}`)
+    }
+  }
 
   async function handleCreate() {
     if (!name.trim() || !location.trim() || !schedule.trim()) {
@@ -473,10 +522,16 @@ function TabHubs({ hubs, onHubsChange }) {
                   <p style={{ margin: '2px 0 0', fontSize: 12, color: '#666' }}>{h.location}</p>
                   <p style={{ margin: '1px 0 0', fontSize: 12, color: '#888' }}>{h.schedule}</p>
                 </div>
-                <button onClick={() => startEdit(h)}
-                  style={{ background: 'none', border: '1px solid #ddd', borderRadius: 7, padding: '5px 10px', cursor: 'pointer', fontSize: 13, color: '#555', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                  ✏️ Editar
-                </button>
+                <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                  <button onClick={() => startEdit(h)}
+                    style={{ background: 'none', border: '1px solid #ddd', borderRadius: 7, padding: '5px 10px', cursor: 'pointer', fontSize: 13, color: '#555', whiteSpace: 'nowrap' }}>
+                    ✏️ Editar
+                  </button>
+                  <button onClick={() => handleDeleteHub(h)}
+                    style={{ background: 'none', border: '1px solid #fcc', borderRadius: 7, padding: '5px 10px', cursor: 'pointer', fontSize: 13, color: '#c0392b', whiteSpace: 'nowrap' }}>
+                    🗑️
+                  </button>
+                </div>
               </div>
             )}
           </div>
