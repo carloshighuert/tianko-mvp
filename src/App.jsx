@@ -13,6 +13,7 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import MarketHub from './pages/MarketHub'
 import Review from './pages/Review'
+import Admin from './pages/Admin'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
 
         {/* 🔐 AUTH */}
         <Route path="/login" element={<Login />} />
+        <Route path="/admin" element={<Admin />} />
 
         {/* 🔥 PRIVADO */}
         <Route
