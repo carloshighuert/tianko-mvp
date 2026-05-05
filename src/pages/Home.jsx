@@ -49,7 +49,7 @@ function Home() {
   async function fetchData() {
     try {
       // Hubs y productos en paralelo (más rápido)
-      const [hubsRes, productsRes, storesRes] = await Promise.all([
+      const [hubsRes, productsRes, storesRes, storeHubsRes] = await Promise.all([
         supabase
           .from('market_hubs')
           .select('*')
@@ -60,14 +60,25 @@ function Home() {
           .select('*')
           .neq('status', 'vendido')
           .order('created_at', { ascending: false })
-          .limit(20), // ANTES: traía todos → lento con muchos productos
+          .limit(20),
 
         supabase
           .from('stores')
-          .select('id, name, hub_id') // solo columnas necesarias
+          .select('id, name'),
+
+        supabase
+          .from('store_hubs')
+          .select('hub_id')
       ])
 
-      setHubs(hubsRes.data || [])
+      // Count distinct stores per hub
+      const hubCounts = {}
+      storeHubsRes.data?.forEach(sh => {
+        hubCounts[sh.hub_id] = (hubCounts[sh.hub_id] || 0) + 1
+      })
+
+      const hubsWithCounts = (hubsRes.data || []).map(h => ({ ...h, storeCount: hubCounts[h.id] || 0 }))
+      setHubs(hubsWithCounts)
 
       // Enriquecer productos con nombre de tienda
       const storesMap = {}
@@ -193,6 +204,11 @@ function Home() {
                         {hub.schedule && (
                           <p style={{ margin: '4px 0 0', fontSize: 11, opacity: 0.7 }}>
                             🕐 {hub.schedule}
+                          </p>
+                        )}
+                        {hub.storeCount > 0 && (
+                          <p style={{ margin: '4px 0 0', fontSize: 11, opacity: 0.8 }}>
+                            🏪 {hub.storeCount} {hub.storeCount === 1 ? 'puesto' : 'puestos'}
                           </p>
                         )}
                       </div>

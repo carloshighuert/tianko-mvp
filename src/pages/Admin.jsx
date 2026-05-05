@@ -31,6 +31,40 @@ const btnPrimary = {
 
 const sectionTitle = { fontSize: 16, fontWeight: 700, margin: '0 0 14px', color: '#111' }
 
+const DAYS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo']
+
+function HubSelectorWidget({ hubs, list, onUpdate, onRemove, onAdd }) {
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <p style={{ fontWeight: 600, fontSize: 14, color: '#333', margin: '0 0 8px' }}>
+        ¿En qué tianguis tiene puesto?
+      </p>
+      {list.map((sh, index) => (
+        <div key={index} style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+          <select value={sh.hub_id} onChange={e => onUpdate(index, 'hub_id', e.target.value)}
+            style={{ flex: 2, padding: 8, borderRadius: 8, border: '1px solid #ddd', fontSize: 14 }}>
+            <option value="">Selecciona tianguis</option>
+            {hubs.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+          </select>
+          <select value={sh.day_of_week} onChange={e => onUpdate(index, 'day_of_week', e.target.value)}
+            style={{ flex: 1, padding: 8, borderRadius: 8, border: '1px solid #ddd', fontSize: 14 }}>
+            <option value="">Día</option>
+            {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
+          </select>
+          <button onClick={() => onRemove(index)}
+            style={{ padding: '8px 10px', background: '#fee', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>
+            ✕
+          </button>
+        </div>
+      ))}
+      <button onClick={onAdd}
+        style={{ padding: '8px 16px', background: '#f5f5f5', border: '1px solid #ddd', borderRadius: 8, cursor: 'pointer', fontSize: 14 }}>
+        + Agregar tianguis
+      </button>
+    </div>
+  )
+}
+
 // ── Compresión de imagen ─────────────────────────────────────────
 function compressImage(file, maxWidth = 1200, quality = 0.75) {
   return new Promise((resolve, reject) => {
@@ -67,7 +101,7 @@ function TabTiendas({ hubs }) {
   const [sellerPhone, setSellerPhone] = useState('')
   const [storeName, setStoreName] = useState('')
   const [storeDesc, setStoreDesc] = useState('')
-  const [hubId, setHubId] = useState('')
+  const [selectedHubs, setSelectedHubs] = useState([])
   const [saving, setSaving] = useState(false)
   const [result, setResult] = useState(null)
   const [stores, setStores] = useState([])
@@ -77,7 +111,7 @@ function TabTiendas({ hubs }) {
   const [editStoreName, setEditStoreName] = useState('')
   const [editStoreDesc, setEditStoreDesc] = useState('')
   const [editStoreWA, setEditStoreWA] = useState('')
-  const [editStoreHub, setEditStoreHub] = useState('')
+  const [editHubs, setEditHubs] = useState([])
   const [savingEdit, setSavingEdit] = useState(false)
 
   useEffect(() => { fetchStores() }, [])
@@ -85,18 +119,26 @@ function TabTiendas({ hubs }) {
   async function fetchStores() {
     const { data } = await supabase
       .from('stores')
-      .select('id, name, description, whatsapp_number, seller_id, hub_id, sellers(name), market_hubs(name)')
+      .select('id, name, description, whatsapp_number, seller_id, sellers(name)')
       .order('created_at', { ascending: false })
     setStores(data || [])
     setLoadingStores(false)
   }
 
-  function startEditStore(s) {
+  const updateSelectedHub = (i, field, val) => {
+    const u = [...selectedHubs]; u[i] = { ...u[i], [field]: val }; setSelectedHubs(u)
+  }
+  const updateEditHub = (i, field, val) => {
+    const u = [...editHubs]; u[i] = { ...u[i], [field]: val }; setEditHubs(u)
+  }
+
+  async function startEditStore(s) {
     setEditingId(s.id)
     setEditStoreName(s.name || '')
     setEditStoreDesc(s.description || '')
     setEditStoreWA(s.whatsapp_number || '')
-    setEditStoreHub(s.hub_id || '')
+    const { data } = await supabase.from('store_hubs').select('*').eq('store_id', s.id)
+    setEditHubs(data?.map(sh => ({ hub_id: sh.hub_id, day_of_week: sh.day_of_week || '' })) || [])
   }
 
   function cancelEditStore() { setEditingId(null) }
@@ -107,14 +149,13 @@ function TabTiendas({ hubs }) {
     try {
       const { error } = await supabase
         .from('stores')
-        .update({
-          name: editStoreName.trim(),
-          description: editStoreDesc.trim() || null,
-          whatsapp_number: editStoreWA.replace(/\D/g, ''),
-          hub_id: editStoreHub || null
-        })
+        .update({ name: editStoreName.trim(), description: editStoreDesc.trim() || null, whatsapp_number: editStoreWA.replace(/\D/g, '') })
         .eq('id', storeId)
       if (error) throw error
+      await supabase.from('store_hubs').delete().eq('store_id', storeId)
+      for (const sh of editHubs) {
+        if (sh.hub_id) await supabase.from('store_hubs').insert({ store_id: storeId, hub_id: sh.hub_id, day_of_week: sh.day_of_week || null })
+      }
       setEditingId(null)
       fetchStores()
     } catch (err) {
@@ -126,6 +167,7 @@ function TabTiendas({ hubs }) {
   async function handleDeleteStore(s) {
     if (!confirm(`¿Eliminar tienda "${s.name}" y todos sus productos? Esta acción no se puede deshacer.`)) return
     try {
+      await supabase.from('store_hubs').delete().eq('store_id', s.id)
       await supabase.from('products').delete().eq('store_id', s.id)
       await supabase.from('stores').delete().eq('id', s.id)
       if (s.seller_id) await supabase.from('sellers').delete().eq('id', s.seller_id)
@@ -156,18 +198,16 @@ function TabTiendas({ hubs }) {
       // 2. Insertar store
       const { data: newStore, error: storeErr } = await supabase
         .from('stores')
-        .insert([{
-          name: storeName.trim(),
-          description: storeDesc.trim() || null,
-          whatsapp_number: phone,
-          seller_id: newSeller.id,
-          hub_id: hubId || null
-        }])
+        .insert([{ name: storeName.trim(), description: storeDesc.trim() || null, whatsapp_number: phone, seller_id: newSeller.id }])
         .select().single()
       if (storeErr) throw storeErr
 
+      for (const sh of selectedHubs) {
+        if (sh.hub_id) await supabase.from('store_hubs').insert({ store_id: newStore.id, hub_id: sh.hub_id, day_of_week: sh.day_of_week || null })
+      }
+
       setResult({ storeId: newStore.id, storeName: newStore.name })
-      setSellerName(''); setSellerPhone(''); setStoreName(''); setStoreDesc(''); setHubId('')
+      setSellerName(''); setSellerPhone(''); setStoreName(''); setStoreDesc(''); setSelectedHubs([])
       fetchStores()
     } catch (err) {
       console.error('[TabTiendas] handleCreate:', err)
@@ -191,16 +231,10 @@ function TabTiendas({ hubs }) {
         <input style={inputStyle} placeholder="Descripción (opcional)"
           value={storeDesc} onChange={e => setStoreDesc(e.target.value)} />
 
-        <select
-          value={hubId}
-          onChange={e => setHubId(e.target.value)}
-          style={{ ...inputStyle, appearance: 'auto' }}
-        >
-          <option value="">Sin tianguis asignado</option>
-          {hubs.map(h => (
-            <option key={h.id} value={h.id}>{h.name} — {h.location}</option>
-          ))}
-        </select>
+        <HubSelectorWidget hubs={hubs} list={selectedHubs}
+          onUpdate={updateSelectedHub}
+          onRemove={i => setSelectedHubs(selectedHubs.filter((_, idx) => idx !== i))}
+          onAdd={() => setSelectedHubs([...selectedHubs, { hub_id: '', day_of_week: '' }])} />
 
         <button style={{ ...btnPrimary, opacity: saving ? 0.6 : 1 }} onClick={handleCreate} disabled={saving}>
           {saving ? 'Creando...' : 'Crear tienda →'}
@@ -228,10 +262,10 @@ function TabTiendas({ hubs }) {
                   <input style={{ ...inputStyle, marginBottom: 8 }} placeholder="Nombre *" value={editStoreName} onChange={e => setEditStoreName(e.target.value)} />
                   <input style={{ ...inputStyle, marginBottom: 8 }} placeholder="Descripción" value={editStoreDesc} onChange={e => setEditStoreDesc(e.target.value)} />
                   <input style={{ ...inputStyle, marginBottom: 8 }} placeholder="WhatsApp" value={editStoreWA} onChange={e => setEditStoreWA(e.target.value)} type="tel" />
-                  <select value={editStoreHub} onChange={e => setEditStoreHub(e.target.value)} style={{ ...inputStyle, appearance: 'auto', marginBottom: 8 }}>
-                    <option value="">Sin tianguis asignado</option>
-                    {hubs.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
-                  </select>
+                  <HubSelectorWidget hubs={hubs} list={editHubs}
+                    onUpdate={updateEditHub}
+                    onRemove={i => setEditHubs(editHubs.filter((_, idx) => idx !== i))}
+                    onAdd={() => setEditHubs([...editHubs, { hub_id: '', day_of_week: '' }])} />
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button onClick={cancelEditStore} style={{ flex: 1, padding: 10, background: 'none', border: '1px solid #ddd', borderRadius: 8, cursor: 'pointer', fontSize: 14 }}>Cancelar</button>
                     <button onClick={() => handleSaveEditStore(s.id)} disabled={savingEdit}
@@ -244,9 +278,7 @@ function TabTiendas({ hubs }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
                   <div style={{ minWidth: 0 }}>
                     <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: '#111' }}>{s.name}</p>
-                    <p style={{ margin: 0, fontSize: 12, color: '#666' }}>
-                      {s.sellers?.name} · {s.market_hubs?.name || 'Sin tianguis'}
-                    </p>
+                    <p style={{ margin: 0, fontSize: 12, color: '#666' }}>{s.sellers?.name}</p>
                   </div>
                   <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                     <a href={`/tienda/${s.id}`} target="_blank" rel="noreferrer"

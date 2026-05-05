@@ -48,13 +48,19 @@ function MarketHub() {
       if (!hubData) return
       setHub(hubData)
 
-      // 2. Tiendas asociadas a este hub
-      const { data: storesData } = await supabase
-        .from('stores')
-        .select('*')
+      // 2. Tiendas asociadas a este hub via store_hubs
+      const { data: storeHubsData } = await supabase
+        .from('store_hubs')
+        .select('*, stores(*)')
         .eq('hub_id', id)
 
-      setStores(storesData || [])
+      // deduplicate stores (a store could appear multiple times if misconfigured)
+      const seen = new Set()
+      const storesData = (storeHubsData || [])
+        .map(sh => sh.stores)
+        .filter(s => s && !seen.has(s.id) && seen.add(s.id))
+
+      setStores(storesData)
 
       // 3. Productos de cada tienda
       if (storesData && storesData.length > 0) {

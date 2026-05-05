@@ -71,6 +71,7 @@ function Dashboard() {
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(null)
   const [selectedHubId, setSelectedHubId] = useState('')
+  const [selectedHubs, setSelectedHubs] = useState([])
 
   // ============================================================
   // 🚀 INICIALIZACIÓN
@@ -90,6 +91,7 @@ function Dashboard() {
       const existingSeller = sellers?.[0]
       if (!existingSeller) { setLoading(false); return }
       setSeller(existingSeller)
+      fetchHubs() // needed for onboarding paso 2 and main dashboard
 
       const { data: stores } = await supabase
         .from('stores').select('*').eq('seller_id', existingSeller.id).limit(1)
@@ -99,8 +101,7 @@ function Dashboard() {
 
       await Promise.all([
         fetchProducts(existingStore.id),
-        fetchMetrics(existingStore.id),
-        fetchHubs()
+        fetchMetrics(existingStore.id)
       ])
 
     } catch (err) {
@@ -157,8 +158,12 @@ function Dashboard() {
         }])
         .select().single()
       if (error) throw error
+
+      for (const sh of selectedHubs) {
+        if (sh.hub_id) await supabase.from('store_hubs').insert({ store_id: data.id, hub_id: sh.hub_id, day_of_week: sh.day_of_week || null })
+      }
+
       setStore(data)
-      fetchHubs()
     } catch (err) {
       console.error('[handleCreateStore]', err)
       alert('Error al crear tienda. Intenta de nuevo.')
@@ -532,7 +537,35 @@ function Dashboard() {
         style={{ width: '100%', padding: 12, marginBottom: 10, fontSize: 16, boxSizing: 'border-box' }} />
       <input placeholder="¿Qué vendes? (opcional)" value={storeDescription}
         onChange={(e) => setStoreDescription(e.target.value)}
-        style={{ width: '100%', padding: 12, marginBottom: 20, fontSize: 16, boxSizing: 'border-box' }} />
+        style={{ width: '100%', padding: 12, marginBottom: 16, fontSize: 16, boxSizing: 'border-box' }} />
+
+      {/* Selector de hubs múltiple */}
+      <div style={{ marginBottom: 16 }}>
+        <p style={{ fontWeight: 600, fontSize: 14, color: '#333', margin: '0 0 8px' }}>¿En qué tianguis tienes puesto?</p>
+        {selectedHubs.map((sh, index) => (
+          <div key={index} style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+            <select value={sh.hub_id}
+              onChange={e => { const u = [...selectedHubs]; u[index] = { ...u[index], hub_id: e.target.value }; setSelectedHubs(u) }}
+              style={{ flex: 2, padding: 8, borderRadius: 8, border: '1px solid #ddd', fontSize: 14 }}>
+              <option value="">Selecciona tianguis</option>
+              {hubs.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+            </select>
+            <select value={sh.day_of_week}
+              onChange={e => { const u = [...selectedHubs]; u[index] = { ...u[index], day_of_week: e.target.value }; setSelectedHubs(u) }}
+              style={{ flex: 1, padding: 8, borderRadius: 8, border: '1px solid #ddd', fontSize: 14 }}>
+              <option value="">Día</option>
+              {['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'].map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+            <button onClick={() => setSelectedHubs(selectedHubs.filter((_, i) => i !== index))}
+              style={{ padding: '8px 10px', background: '#fee', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>✕</button>
+          </div>
+        ))}
+        <button onClick={() => setSelectedHubs([...selectedHubs, { hub_id: '', day_of_week: '' }])}
+          style={{ padding: '8px 16px', background: '#f5f5f5', border: '1px solid #ddd', borderRadius: 8, cursor: 'pointer', fontSize: 14 }}>
+          + Agregar tianguis
+        </button>
+      </div>
+
       <button onClick={handleCreateStore} disabled={savingStore}
         style={{ width: '100%', padding: 14, background: savingStore ? '#ccc' : '#000',
           color: 'white', border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 'bold' }}>

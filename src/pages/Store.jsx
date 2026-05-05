@@ -11,21 +11,24 @@ function Store() {
   const [store, setStore] = useState(null)
   const [products, setProducts] = useState([])
   const [reviews, setReviews] = useState([])
+  const [storeHubs, setStoreHubs] = useState([])
 
   useEffect(() => {
     fetchData()
   }, [id])
 
   async function fetchData() {
-    const [storeRes, productsRes, reviewsRes] = await Promise.all([
+    const [storeRes, productsRes, reviewsRes, storeHubsRes] = await Promise.all([
       supabase.from('stores').select('*').eq('id', id),
       supabase.from('products').select('*').eq('store_id', id),
       supabase.from('reviews').select('*').eq('store_id', id)
-        .eq('used', true).not('rating', 'is', null)
+        .eq('used', true).not('rating', 'is', null),
+      supabase.from('store_hubs').select('*, market_hubs(name, location, schedule)').eq('store_id', id)
     ])
     setStore(storeRes.data?.[0])
     setProducts(productsRes.data || [])
     setReviews(reviewsRes.data || [])
+    setStoreHubs(storeHubsRes.data || [])
   }
 
   function handleWhatsApp() {
@@ -51,6 +54,18 @@ function Store() {
             ? `⭐ ${(reviews.reduce((a, b) => a + b.rating, 0) / reviews.length).toFixed(1)} (${reviews.length} reseña${reviews.length !== 1 ? 's' : ''})`
             : 'Sin reseñas aún'}
         </p>
+
+        {storeHubs.length > 0 && (
+          <div style={{ marginBottom: 16 }}>
+            <p style={{ color: '#666', fontSize: 13, marginBottom: 8 }}>📍 Encuéntranos en:</p>
+            {storeHubs.map(sh => (
+              <div key={sh.id} style={{ background: '#f9f9f9', borderRadius: 8, padding: '8px 12px', marginBottom: 6, fontSize: 14 }}>
+                <span style={{ fontWeight: 600 }}>{sh.market_hubs?.name}</span>
+                {sh.day_of_week && <span style={{ color: '#666', marginLeft: 8 }}>· {sh.day_of_week}</span>}
+              </div>
+            ))}
+          </div>
+        )}
 
         <button
           onClick={handleWhatsApp}
