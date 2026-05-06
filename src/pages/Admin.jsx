@@ -313,7 +313,7 @@ function TabProductos({ hubs }) {
   const [products, setProducts] = useState([])
   const [loadingProducts, setLoadingProducts] = useState(true)
 
-  const [editingId, setEditingId] = useState(null)
+  const [editingProductId, setEditingProductId] = useState(null)
   const [editTitle, setEditTitle] = useState('')
   const [editPrice, setEditPrice] = useState('')
   const [editCategory, setEditCategory] = useState('')
@@ -345,7 +345,7 @@ function TabProductos({ hubs }) {
   }
 
   function startEditProduct(p) {
-    setEditingId(p.id)
+    setEditingProductId(p.id)
     setEditTitle(p.title || '')
     setEditPrice(String(p.price || ''))
     setEditCategory(p.category || '')
@@ -353,7 +353,7 @@ function TabProductos({ hubs }) {
     setNewImagePreview(null)
   }
 
-  function cancelEditProduct() { setEditingId(null) }
+  function cancelEditProduct() { setEditingProductId(null) }
 
   async function handleSaveEditProduct(p) {
     if (!editTitle.trim() || !editPrice) { alert('Título y precio son obligatorios'); return }
@@ -374,7 +374,7 @@ function TabProductos({ hubs }) {
         .update({ title: editTitle.trim(), price: parseFloat(editPrice), category: editCategory.trim() || null, image_url })
         .eq('id', p.id)
       if (error) throw error
-      setEditingId(null)
+      setEditingProductId(null)
       fetchRecentProducts()
     } catch (err) {
       console.error('[handleSaveEditProduct]', err)
@@ -497,9 +497,34 @@ function TabProductos({ hubs }) {
         <p style={sectionTitle}>Últimos 20 productos</p>
         {loadingProducts ? <p style={{ color: '#999', fontSize: 14 }}>Cargando...</p> : (
           products.map(p => (
-            <div key={p.id} style={{ padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-              {editingId === p.id ? (
-                <div>
+            <div key={p.id} style={{ marginBottom: 8 }}>
+              {/* Card siempre visible */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                padding: '12px', background: '#f9f9f9', borderRadius: 8 }}>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center', minWidth: 0 }}>
+                  {p.image_url && (
+                    <img src={p.image_url} alt={p.title}
+                      style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: 6, flexShrink: 0 }} />
+                  )}
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: '#111',
+                      overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{p.title}</p>
+                    <p style={{ margin: 0, color: '#666', fontSize: 12 }}>${p.price} · {p.stores?.name}</p>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 6, flexShrink: 0, marginLeft: 8 }}>
+                  <a href={`/producto/${p.id}`} target="_blank" rel="noreferrer"
+                    style={{ padding: '6px 8px', fontSize: 12, color: '#007bff', whiteSpace: 'nowrap', textDecoration: 'none' }}>Ver →</a>
+                  <button onClick={() => startEditProduct(p)}
+                    style={{ padding: '6px 12px', background: '#fff', border: '1px solid #ddd', borderRadius: 8, cursor: 'pointer', fontSize: 14 }}>✏️</button>
+                  <button onClick={() => handleDeleteProduct(p)}
+                    style={{ padding: '6px 12px', background: '#fee', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 14 }}>🗑️</button>
+                </div>
+              </div>
+
+              {/* Formulario inline debajo del card */}
+              {editingProductId === p.id && (
+                <div style={{ marginTop: 6, padding: 12, background: 'white', borderRadius: 8, border: '1px solid #e0e0e0' }}>
                   {p.image_url && !newImagePreview && (
                     <img src={p.image_url} alt="actual"
                       style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 8, marginBottom: 8 }} />
@@ -528,26 +553,14 @@ function TabProductos({ hubs }) {
                   <input style={{ ...inputStyle, marginBottom: 8 }} placeholder="Precio *" value={editPrice} onChange={e => setEditPrice(e.target.value)} type="number" inputMode="decimal" />
                   <input style={{ ...inputStyle, marginBottom: 8 }} placeholder="Categoría" value={editCategory} onChange={e => setEditCategory(e.target.value)} />
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={cancelEditProduct} style={{ flex: 1, padding: 10, background: 'none', border: '1px solid #ddd', borderRadius: 8, cursor: 'pointer', fontSize: 14 }}>Cancelar</button>
+                    <button onClick={cancelEditProduct}
+                      style={{ flex: 1, padding: 10, background: 'none', border: '1px solid #ddd', borderRadius: 8, cursor: 'pointer', fontSize: 14 }}>
+                      Cancelar
+                    </button>
                     <button onClick={() => handleSaveEditProduct(p)} disabled={savingEdit}
                       style={{ flex: 2, padding: 10, background: '#111', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 14, fontWeight: 700, opacity: savingEdit ? 0.6 : 1 }}>
                       {savingEdit ? 'Guardando...' : 'Guardar'}
                     </button>
-                  </div>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                  <div style={{ minWidth: 0 }}>
-                    <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#111' }}>{p.title}</p>
-                    <p style={{ margin: 0, fontSize: 12, color: '#666' }}>${p.price} · {p.stores?.name}</p>
-                  </div>
-                  <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                    <a href={`/producto/${p.id}`} target="_blank" rel="noreferrer"
-                      style={{ fontSize: 12, color: '#007bff', whiteSpace: 'nowrap' }}>Ver →</a>
-                    <button onClick={() => startEditProduct(p)}
-                      style={{ background: 'none', border: '1px solid #ddd', borderRadius: 6, padding: '2px 8px', fontSize: 12, color: '#555', cursor: 'pointer' }}>✏️</button>
-                    <button onClick={() => handleDeleteProduct(p)}
-                      style={{ background: 'none', border: '1px solid #fcc', borderRadius: 6, padding: '2px 8px', fontSize: 12, color: '#c0392b', cursor: 'pointer' }}>🗑️</button>
                   </div>
                 </div>
               )}
