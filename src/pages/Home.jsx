@@ -247,25 +247,24 @@ function Home() {
                       overflow: 'hidden',
                       boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
                     }}>
-                      {p.image_url ? (
-                        <img
-                          src={p.image_url}
-                          alt={p.title}
-                          style={{ width: '100%', height: 130, objectFit: 'cover' }}
-                        />
-                      ) : (
-                        <div style={{
-                          width: '100%',
-                          height: 130,
-                          background: '#f0f0f0',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: 32
-                        }}>
-                          📦
-                        </div>
-                      )}
+                      <img
+                        src={p.image_url}
+                        alt={p.title}
+                        style={{ width: '100%', height: 130, objectFit: 'cover', display: p.image_url ? 'block' : 'none' }}
+                        onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }}
+                      />
+                      <div style={{
+                        display: p.image_url ? 'none' : 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: '#f5f5f5',
+                        height: 130,
+                        flexDirection: 'column',
+                        gap: 8
+                      }}>
+                        <span style={{ fontSize: 32 }}>🏷️</span>
+                        <span style={{ fontSize: 12, color: '#999' }}>Sin foto</span>
+                      </div>
                       <div style={{ padding: '8px 10px 10px' }}>
                         <p style={{
                           margin: 0,

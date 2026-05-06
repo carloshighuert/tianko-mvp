@@ -234,13 +234,26 @@ function Product() {
         }}>
 
           {/* IMAGEN */}
-          {product?.image_url && (
-            <img
-              src={product.image_url}
-              alt={product?.title}
-              style={{ width: '100%', borderRadius: 12, marginBottom: 12 }}
-            />
-          )}
+          <img
+            src={product.image_url}
+            alt={product?.title}
+            style={{ width: '100%', borderRadius: 12, marginBottom: 12, display: product.image_url ? 'block' : 'none' }}
+            onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }}
+          />
+          <div style={{
+            display: product.image_url ? 'none' : 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#f5f5f5',
+            minHeight: 160,
+            borderRadius: 8,
+            marginBottom: 12,
+            flexDirection: 'column',
+            gap: 8
+          }}>
+            <span style={{ fontSize: 32 }}>🏷️</span>
+            <span style={{ fontSize: 12, color: '#999' }}>Sin foto</span>
+          </div>
 
           {/* TÍTULO */}
           <h2 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#111111', WebkitTextFillColor: '#111111' }}>
