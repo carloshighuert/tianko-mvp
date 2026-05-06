@@ -55,6 +55,14 @@ function Product() {
       if (!productData) return
       setProduct(productData)
 
+      if (window.gtag) {
+        window.gtag('event', 'view_item', {
+          item_id: productData?.id,
+          item_name: productData?.title,
+          price: productData?.price
+        })
+      }
+
       // ANTES: traía TODAS las tiendas → ineficiente
       // AHORA: query directo por store_id
       const { data: storeData } = await supabase
@@ -170,6 +178,14 @@ function Product() {
       })
     } catch (err) {
       console.error('Error registrando evento:', err)
+    }
+    if (window.gtag) {
+      window.gtag('event', 'click_whatsapp', {
+        product_id: product?.id,
+        product_name: product?.title,
+        store_name: store?.name,
+        value: product?.price
+      })
     }
   }
 

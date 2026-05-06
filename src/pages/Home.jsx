@@ -148,7 +148,12 @@ function Home() {
           className="search-input"
           placeholder="🔍 Busca productos o tianguis..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => {
+            setSearchQuery(e.target.value)
+            if (window.gtag && e.target.value.length > 2) {
+              window.gtag('event', 'search', { search_term: e.target.value })
+            }
+          }}
           style={{
             width: '100%',
             padding: 14,
