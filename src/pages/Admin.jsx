@@ -377,7 +377,7 @@ function TabProductos({ hubs }) {
       console.log('1. newImage existe:', !!newImage)
 
       if (newImage) {
-        const fileName = `admin-${Date.now()}.jpg`
+        const fileName = `${p.store_id}/admin-${Date.now()}.jpg`
         console.log('2. Subiendo archivo:', fileName)
 
         const { data: uploadData, error: uploadError } = await supabase.storage
