@@ -317,8 +317,8 @@ function TabProductos({ hubs }) {
   const [editTitle, setEditTitle] = useState('')
   const [editPrice, setEditPrice] = useState('')
   const [editCategory, setEditCategory] = useState('')
-  const [editFile, setEditFile] = useState(null)
-  const [editPreview, setEditPreview] = useState(null)
+  const [newImage, setNewImage] = useState(null)
+  const [newImagePreview, setNewImagePreview] = useState(null)
   const [savingEdit, setSavingEdit] = useState(false)
 
   useEffect(() => {
@@ -349,8 +349,8 @@ function TabProductos({ hubs }) {
     setEditTitle(p.title || '')
     setEditPrice(String(p.price || ''))
     setEditCategory(p.category || '')
-    setEditFile(null)
-    setEditPreview(null)
+    setNewImage(null)
+    setNewImagePreview(null)
   }
 
   function cancelEditProduct() { setEditingId(null) }
@@ -361,14 +361,10 @@ function TabProductos({ hubs }) {
     setSavingEdit(true)
     try {
       let image_url = p.image_url
-      if (editFile) {
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic']
-        if (!allowedTypes.includes(editFile.type)) { alert('Solo JPG, PNG o WEBP'); setSavingEdit(false); return }
-        if (editFile.size > 15 * 1024 * 1024) { alert('Máximo 15MB'); setSavingEdit(false); return }
-        const compressed = await compressImage(editFile)
-        const fileName = `${p.store_id}/${Date.now()}.jpg`
+      if (newImage) {
+        const fileName = `admin-${Date.now()}.jpg`
         const { error: uploadErr } = await supabase.storage
-          .from('products').upload(fileName, compressed, { contentType: 'image/jpeg', upsert: false })
+          .from('products').upload(fileName, newImage, { contentType: 'image/jpeg', upsert: false })
         if (uploadErr) throw uploadErr
         const { data: urlData } = supabase.storage.from('products').getPublicUrl(fileName)
         image_url = urlData.publicUrl
@@ -504,15 +500,30 @@ function TabProductos({ hubs }) {
             <div key={p.id} style={{ padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
               {editingId === p.id ? (
                 <div>
-                  <label style={{ display: 'block', padding: '8px', borderRadius: 8, border: '1px dashed #aaa',
-                    textAlign: 'center', cursor: 'pointer', marginBottom: 8, fontSize: 13, color: '#555' }}>
-                    {editPreview
-                      ? <img src={editPreview} alt="preview" style={{ width: '100%', maxHeight: 120, objectFit: 'cover', borderRadius: 6 }} />
-                      : (p.image_url
-                          ? <img src={p.image_url} alt="actual" style={{ width: '100%', maxHeight: 120, objectFit: 'cover', borderRadius: 6, opacity: 0.6 }} />
-                          : '📷 Seleccionar nueva imagen (opcional)')}
-                    <input type="file" accept="image/*" onChange={e => { const f = e.target.files[0]; if (f) { setEditFile(f); setEditPreview(URL.createObjectURL(f)) } }} style={{ display: 'none' }} />
+                  {p.image_url && !newImagePreview && (
+                    <img src={p.image_url} alt="actual"
+                      style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 8, marginBottom: 8 }} />
+                  )}
+                  <label style={{
+                    display: 'block', padding: '10px', background: '#f5f5f5',
+                    borderRadius: 8, textAlign: 'center', cursor: 'pointer',
+                    border: '1px dashed #ddd', marginBottom: newImagePreview ? 8 : 12,
+                    fontSize: 13, color: '#555'
+                  }}>
+                    📷 {newImagePreview ? 'Cambiar foto' : 'Subir nueva foto'}
+                    <input type="file" accept="image/*" style={{ display: 'none' }}
+                      onChange={async e => {
+                        const f = e.target.files[0]
+                        if (!f) return
+                        const compressed = await compressImage(f)
+                        setNewImage(compressed)
+                        setNewImagePreview(URL.createObjectURL(f))
+                      }} />
                   </label>
+                  {newImagePreview && (
+                    <img src={newImagePreview} alt="nueva"
+                      style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 8, marginBottom: 12 }} />
+                  )}
                   <input style={{ ...inputStyle, marginBottom: 8 }} placeholder="Título *" value={editTitle} onChange={e => setEditTitle(e.target.value)} />
                   <input style={{ ...inputStyle, marginBottom: 8 }} placeholder="Precio *" value={editPrice} onChange={e => setEditPrice(e.target.value)} type="number" inputMode="decimal" />
                   <input style={{ ...inputStyle, marginBottom: 8 }} placeholder="Categoría" value={editCategory} onChange={e => setEditCategory(e.target.value)} />
