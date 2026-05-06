@@ -335,13 +335,24 @@ function TabProductos({ hubs }) {
   }
 
   async function fetchRecentProducts() {
-    const { data, error } = await supabase
+    const { data: productsData, error: prodError } = await supabase
       .from('products')
-      .select('*, stores(name, seller_id, sellers(name))')
+      .select('*')
       .order('created_at', { ascending: false })
       .limit(20)
-    console.log('Productos admin:', data, error)
-    setProducts(data || [])
+
+    console.log('Productos:', productsData, prodError)
+
+    const { data: storesData } = await supabase
+      .from('stores')
+      .select('id, name')
+
+    const productsWithStore = productsData?.map(p => ({
+      ...p,
+      storeName: storesData?.find(s => s.id === p.store_id)?.name || 'Sin tienda'
+    }))
+
+    setProducts(productsWithStore || [])
     setLoadingProducts(false)
   }
 
@@ -510,7 +521,7 @@ function TabProductos({ hubs }) {
                   <div style={{ minWidth: 0 }}>
                     <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: '#111',
                       overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{p.title}</p>
-                    <p style={{ margin: 0, color: '#666', fontSize: 12 }}>${p.price} · {p.stores?.name}</p>
+                    <p style={{ margin: 0, color: '#666', fontSize: 12 }}>${p.price} · {p.storeName}</p>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 6, flexShrink: 0, marginLeft: 8 }}>
