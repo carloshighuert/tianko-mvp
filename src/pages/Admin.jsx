@@ -372,20 +372,40 @@ function TabProductos({ hubs }) {
     if (isNaN(editPrice) || parseFloat(editPrice) <= 0) { alert('El precio debe ser mayor a $0'); return }
     setSavingEdit(true)
     try {
-      let image_url = p.image_url
+      let imageUrl = p.image_url
+
+      console.log('1. newImage existe:', !!newImage)
+
       if (newImage) {
         const fileName = `admin-${Date.now()}.jpg`
-        const { error: uploadErr } = await supabase.storage
-          .from('products').upload(fileName, newImage, { contentType: 'image/jpeg', upsert: false })
-        if (uploadErr) throw uploadErr
-        const { data: urlData } = supabase.storage.from('products').getPublicUrl(fileName)
-        image_url = urlData.publicUrl
+        console.log('2. Subiendo archivo:', fileName)
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('products')
+          .upload(fileName, newImage, { contentType: 'image/jpeg', upsert: true })
+
+        console.log('3. Upload result:', uploadData, uploadError)
+
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage
+            .from('products')
+            .getPublicUrl(fileName)
+
+          console.log('4. URL pública:', urlData?.publicUrl)
+          imageUrl = urlData?.publicUrl
+        }
       }
-      const { error } = await supabase
+
+      console.log('5. imageUrl final:', imageUrl)
+
+      const { error: updateError } = await supabase
         .from('products')
-        .update({ title: editTitle.trim(), price: parseFloat(editPrice), category: editCategory.trim() || null, image_url })
+        .update({ title: editTitle.trim(), price: parseFloat(editPrice), category: editCategory.trim() || null, image_url: imageUrl })
         .eq('id', p.id)
-      if (error) throw error
+
+      console.log('6. Update result:', updateError)
+
+      if (updateError) throw updateError
       setEditingProductId(null)
       fetchRecentProducts()
     } catch (err) {
