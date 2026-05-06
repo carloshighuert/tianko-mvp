@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tianko-v2'
+const CACHE_NAME = 'tianko-v3'
 
 self.addEventListener('install', event => {
   self.skipWaiting()
