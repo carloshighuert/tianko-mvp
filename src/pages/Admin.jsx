@@ -407,28 +407,15 @@ function TabProductos({ hubs }) {
 
       if (updateError) throw updateError
 
+      setProducts(prev => prev.map(item =>
+        item.id === p.id
+          ? { ...item, title: editTitle.trim(), price: parseFloat(editPrice), category: editCategory.trim() || null, image_url: imageUrl, storeName: item.storeName }
+          : item
+      ))
+
       setEditingProductId(null)
       setNewImage(null)
       setNewImagePreview(null)
-
-      const { data: productsData } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(20)
-
-      const { data: storesData } = await supabase
-        .from('stores')
-        .select('id, name')
-
-      const productsWithStore = productsData?.map(prod => ({
-        ...prod,
-        storeName: storesData?.find(s => s.id === prod.store_id)?.name || 'Sin tienda'
-      }))
-
-      setProducts(productsWithStore || [])
-
-      alert('✓ Producto actualizado correctamente')
     } catch (err) {
       console.error('[handleSaveEditProduct]', err)
       alert(`Error: ${err.message}`)
