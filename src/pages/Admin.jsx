@@ -514,11 +514,11 @@ function TabProductos({ hubs }) {
                 </div>
                 <div style={{ display: 'flex', gap: 6, flexShrink: 0, marginLeft: 8 }}>
                   <a href={`/producto/${p.id}`} target="_blank" rel="noreferrer"
-                    style={{ padding: '6px 8px', fontSize: 12, color: '#007bff', whiteSpace: 'nowrap', textDecoration: 'none' }}>Ver →</a>
+                    style={{ color: '#2563eb', fontSize: 13, textDecoration: 'none', padding: '6px 8px' }}>Ver →</a>
                   <button onClick={() => startEditProduct(p)}
-                    style={{ padding: '6px 12px', background: '#fff', border: '1px solid #ddd', borderRadius: 8, cursor: 'pointer', fontSize: 14 }}>✏️</button>
+                    style={{ padding: '6px 10px', background: '#fff', border: '1px solid #ccc', borderRadius: 8, cursor: 'pointer', fontSize: 16 }}>✏️</button>
                   <button onClick={() => handleDeleteProduct(p)}
-                    style={{ padding: '6px 12px', background: '#fee', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 14 }}>🗑️</button>
+                    style={{ padding: '6px 10px', background: '#fee2e2', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 16 }}>🗑️</button>
                 </div>
               </div>
 
