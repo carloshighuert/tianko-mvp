@@ -406,8 +406,29 @@ function TabProductos({ hubs }) {
       console.log('6. Update result:', updateError)
 
       if (updateError) throw updateError
+
       setEditingProductId(null)
-      fetchRecentProducts()
+      setNewImage(null)
+      setNewImagePreview(null)
+
+      const { data: productsData } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20)
+
+      const { data: storesData } = await supabase
+        .from('stores')
+        .select('id, name')
+
+      const productsWithStore = productsData?.map(prod => ({
+        ...prod,
+        storeName: storesData?.find(s => s.id === prod.store_id)?.name || 'Sin tienda'
+      }))
+
+      setProducts(productsWithStore || [])
+
+      alert('✓ Producto actualizado correctamente')
     } catch (err) {
       console.error('[handleSaveEditProduct]', err)
       alert(`Error: ${err.message}`)
