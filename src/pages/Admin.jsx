@@ -335,11 +335,12 @@ function TabProductos({ hubs }) {
   }
 
   async function fetchRecentProducts() {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('products')
-      .select('id, title, price, category, image_url, store_id, created_at, stores(name)')
+      .select('*, stores(name, seller_id, sellers(name))')
       .order('created_at', { ascending: false })
       .limit(20)
+    console.log('Productos admin:', data, error)
     setProducts(data || [])
     setLoadingProducts(false)
   }
