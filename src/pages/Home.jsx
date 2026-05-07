@@ -37,10 +37,38 @@ function Home() {
   useEffect(() => {
     checkUser()
     fetchData()
+
     if (localStorage.getItem('tianko_show_seller_hint') === 'true') {
-      setShowSellerHint(true)
       localStorage.removeItem('tianko_show_seller_hint')
+      setShowSellerHint(true)
       setTimeout(() => setShowSellerHint(false), 4000)
+      return
+    }
+
+    const handleStorage = () => {
+      if (localStorage.getItem('tianko_show_seller_hint') === 'true') {
+        localStorage.removeItem('tianko_show_seller_hint')
+        setShowSellerHint(true)
+        setTimeout(() => setShowSellerHint(false), 4000)
+      }
+    }
+    window.addEventListener('storage', handleStorage)
+
+    let checks = 0
+    const interval = setInterval(() => {
+      checks++
+      if (checks > 10) { clearInterval(interval); return }
+      if (localStorage.getItem('tianko_show_seller_hint') === 'true') {
+        localStorage.removeItem('tianko_show_seller_hint')
+        setShowSellerHint(true)
+        setTimeout(() => setShowSellerHint(false), 4000)
+        clearInterval(interval)
+      }
+    }, 300)
+
+    return () => {
+      window.removeEventListener('storage', handleStorage)
+      clearInterval(interval)
     }
   }, [])
 
