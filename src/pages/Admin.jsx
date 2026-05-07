@@ -507,18 +507,29 @@ function TabProductos({ hubs }) {
     setSaving(true)
     try {
       const image_url = await uploadImage(selectedStoreId)
-      const { error } = await supabase.from('products').insert([{
-        title: title.trim(),
-        price: parseFloat(price),
-        category: category.trim() || null,
-        image_url,
-        store_id: selectedStoreId,
-        status: 'publicado'
-      }])
-      if (error) throw error
-      setTitle(''); setPrice(''); setCategory(''); setFile(null); setPreview(null)
-      fetchRecentProducts()
-      alert('✓ Producto publicado')
+      const { data: newProduct, error: productError } = await supabase
+        .from('products')
+        .insert([{
+          title: title.trim(),
+          price: parseFloat(price),
+          category: category.trim() || null,
+          image_url,
+          store_id: selectedStoreId,
+          status: 'publicado'
+        }])
+        .select()
+        .single()
+      if (productError) {
+        if (productError.code === '23505') {
+          console.log('Producto duplicado bloqueado por constraint')
+        } else {
+          throw productError
+        }
+      } else {
+        setTitle(''); setPrice(''); setCategory(''); setFile(null); setPreview(null)
+        fetchRecentProducts()
+        alert('✓ Producto publicado')
+      }
     } catch (err) {
       console.error('[TabProductos] handleCreate:', err)
       alert(`Error: ${err.message}`)
