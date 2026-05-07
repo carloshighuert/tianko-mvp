@@ -700,12 +700,21 @@ function TabHubs({ hubs, onHubsChange }) {
     }
     setSaving(true)
     try {
-      const { error } = await supabase
+      const { data: newHub, error: hubError } = await supabase
         .from('market_hubs')
-        .insert([{ name: name.trim(), location: location.trim(), schedule: schedule.trim(), hub_type: hubType }])
-      if (error) throw error
-      setName(''); setLocation(''); setSchedule(''); setHubType('tianguis')
-      await onHubsChange()
+        .insert({ name: name.trim(), location: location.trim(), schedule: schedule.trim(), hub_type: hubType })
+        .select()
+        .single()
+      if (hubError) {
+        if (hubError.code === '23505') {
+          console.log('Hub duplicado bloqueado por constraint')
+        } else {
+          throw hubError
+        }
+      } else {
+        setName(''); setLocation(''); setSchedule(''); setHubType('tianguis')
+        await onHubsChange()
+      }
     } catch (err) {
       console.error('[TabHubs] handleCreate:', err)
       alert(`Error: ${err.message}`)
