@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import BulkUpload from '../components/BulkUpload'
 
@@ -97,6 +97,7 @@ function compressImage(file, maxWidth = 1200, quality = 0.75) {
 // Tab 1: Tiendas
 // ────────────────────────────────────────────────────────────────
 function TabTiendas({ hubs }) {
+  const isCreatingRef = useRef(false)
   const [sellerName, setSellerName] = useState('')
   const [sellerPhone, setSellerPhone] = useState('')
   const [storeName, setStoreName] = useState('')
@@ -180,8 +181,13 @@ function TabTiendas({ hubs }) {
   }
 
   async function handleCreate() {
-    if (creatingStore) return
+    if (isCreatingRef.current) {
+      console.log('BLOQUEADO - ya está creando')
+      return
+    }
+    isCreatingRef.current = true
     if (!sellerName.trim() || !sellerPhone.trim() || !storeName.trim()) {
+      isCreatingRef.current = false
       alert('Nombre del vendedor, teléfono y nombre de tienda son obligatorios')
       return
     }
@@ -218,6 +224,7 @@ function TabTiendas({ hubs }) {
     } finally {
       setSaving(false)
       setCreatingStore(false)
+      isCreatingRef.current = false
     }
   }
 
