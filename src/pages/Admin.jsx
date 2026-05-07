@@ -181,6 +181,7 @@ function TabTiendas({ hubs }) {
   }
 
   async function handleCreate() {
+    console.log('=== INICIO handleCreateStore ===', Date.now())
     if (isCreatingRef.current) {
       console.log('BLOQUEADO - ya está creando')
       return
@@ -197,19 +198,21 @@ function TabTiendas({ hubs }) {
     try {
       const phone = sellerPhone.replace(/\D/g, '')
 
-      // 1. Insertar seller sin user_id
+      console.log('Insertando seller...', sellerName, sellerPhone)
       const { data: newSeller, error: sellerErr } = await supabase
         .from('sellers')
         .insert([{ name: sellerName.trim(), phone, user_id: null }])
         .select().single()
       if (sellerErr) throw sellerErr
+      console.log('Seller creado:', newSeller)
 
-      // 2. Insertar store
+      console.log('Insertando store...', storeName)
       const { data: newStore, error: storeErr } = await supabase
         .from('stores')
         .insert([{ name: storeName.trim(), description: storeDesc.trim() || null, whatsapp_number: phone, seller_id: newSeller.id }])
         .select().single()
       if (storeErr) throw storeErr
+      console.log('Store creada:', newStore)
 
       for (const sh of selectedHubs) {
         if (sh.hub_id) await supabase.from('store_hubs').insert({ store_id: newStore.id, hub_id: sh.hub_id, day_of_week: sh.day_of_week || null })
@@ -225,6 +228,7 @@ function TabTiendas({ hubs }) {
       setSaving(false)
       setCreatingStore(false)
       isCreatingRef.current = false
+      console.log('=== FIN handleCreateStore ===', Date.now())
     }
   }
 
