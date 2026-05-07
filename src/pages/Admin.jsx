@@ -180,6 +180,7 @@ function TabTiendas({ hubs }) {
   }
 
   async function handleCreate() {
+    console.log('handleCreateStore llamado', new Date().getTime())
     if (creatingStore) return
     if (!sellerName.trim() || !sellerPhone.trim() || !storeName.trim()) {
       alert('Nombre del vendedor, teléfono y nombre de tienda son obligatorios')
@@ -240,7 +241,7 @@ function TabTiendas({ hubs }) {
           onRemove={i => setSelectedHubs(selectedHubs.filter((_, idx) => idx !== i))}
           onAdd={() => setSelectedHubs([...selectedHubs, { hub_id: '', day_of_week: '' }])} />
 
-        <button style={{ ...btnPrimary, opacity: creatingStore ? 0.6 : 1 }} onClick={handleCreate} disabled={creatingStore}>
+        <button type="button" style={{ ...btnPrimary, opacity: creatingStore ? 0.6 : 1 }} onClick={handleCreate} disabled={creatingStore}>
           {creatingStore ? 'Creando...' : 'Crear tienda →'}
         </button>
 
