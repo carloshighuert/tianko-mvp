@@ -214,9 +214,22 @@ function TabTiendas({ hubs }) {
           .insert({ name: sellerName.trim(), phone, user_id: null })
           .select()
           .single()
-        if (sellerError) throw sellerError
-        sellerId = newSeller.id
-        console.log('Nuevo seller creado:', sellerId)
+        if (sellerError) {
+          if (sellerError.code === '23505') {
+            console.log('Constraint violado - buscando seller existente')
+            const { data: existing } = await supabase
+              .from('sellers')
+              .select('id')
+              .eq('phone', phone)
+              .single()
+            sellerId = existing.id
+          } else {
+            throw sellerError
+          }
+        } else {
+          sellerId = newSeller.id
+          console.log('Nuevo seller creado:', sellerId)
+        }
       }
 
       console.log('Insertando store...', storeName)
