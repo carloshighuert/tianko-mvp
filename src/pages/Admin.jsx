@@ -196,36 +196,33 @@ function TabTiendas({ hubs }) {
     setSaving(true)
     setResult(null)
     try {
-      const phone = sellerPhone.replace(/\D/g, '')
+      const phone = sellerPhone.replace(/\D/g, '').slice(-10)
 
-      console.log('Insertando seller...', sellerName, sellerPhone)
-      const { data: newSeller, error: sellerErr } = await supabase
-        .from('sellers')
-        .insert([{ name: sellerName.trim(), phone, user_id: null }])
-        .select().single()
-      if (sellerErr) throw sellerErr
-      console.log('Seller creado:', newSeller)
-
-      const { data: existingSeller } = await supabase
+      let sellerId = null
+      const { data: existingSellers } = await supabase
         .from('sellers')
         .select('id')
         .eq('phone', phone)
-        .eq('name', sellerName.trim())
-        .order('created_at', { ascending: false })
-        .limit(2)
+        .limit(1)
 
-      console.log('Sellers existentes con mismo teléfono:', existingSeller)
-
-      if (existingSeller && existingSeller.length > 1) {
-        console.error('DUPLICADO DETECTADO - abortando')
-        await supabase.from('sellers').delete().eq('id', existingSeller[0].id)
-        return
+      if (existingSellers && existingSellers.length > 0) {
+        sellerId = existingSellers[0].id
+        console.log('Seller existente reutilizado:', sellerId)
+      } else {
+        const { data: newSeller, error: sellerError } = await supabase
+          .from('sellers')
+          .insert({ name: sellerName.trim(), phone, user_id: null })
+          .select()
+          .single()
+        if (sellerError) throw sellerError
+        sellerId = newSeller.id
+        console.log('Nuevo seller creado:', sellerId)
       }
 
       console.log('Insertando store...', storeName)
       const { data: newStore, error: storeErr } = await supabase
         .from('stores')
-        .insert([{ name: storeName.trim(), description: storeDesc.trim() || null, whatsapp_number: phone, seller_id: newSeller.id }])
+        .insert([{ name: storeName.trim(), description: storeDesc.trim() || null, whatsapp_number: phone, seller_id: sellerId }])
         .select().single()
       if (storeErr) throw storeErr
       console.log('Store creada:', newStore)
