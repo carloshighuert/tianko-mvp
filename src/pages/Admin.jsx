@@ -180,7 +180,6 @@ function TabTiendas({ hubs }) {
   }
 
   async function handleCreate() {
-    console.log('handleCreateStore llamado', new Date().getTime())
     if (creatingStore) return
     if (!sellerName.trim() || !sellerPhone.trim() || !storeName.trim()) {
       alert('Nombre del vendedor, teléfono y nombre de tienda son obligatorios')
