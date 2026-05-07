@@ -25,52 +25,27 @@ const capitalize = (str) => {
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
 }
 
-function Home() {
+function Home({ showSellerHint, onHintSeen }) {
 
   const [hubs, setHubs] = useState([])
   const [products, setProducts] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [showSellerHint, setShowSellerHint] = useState(false)
 
   useEffect(() => {
     checkUser()
     fetchData()
-
-    if (localStorage.getItem('tianko_show_seller_hint') === 'true') {
-      localStorage.removeItem('tianko_show_seller_hint')
-      setShowSellerHint(true)
-      setTimeout(() => setShowSellerHint(false), 4000)
-      return
-    }
-
-    const handleStorage = () => {
-      if (localStorage.getItem('tianko_show_seller_hint') === 'true') {
-        localStorage.removeItem('tianko_show_seller_hint')
-        setShowSellerHint(true)
-        setTimeout(() => setShowSellerHint(false), 4000)
-      }
-    }
-    window.addEventListener('storage', handleStorage)
-
-    let checks = 0
-    const interval = setInterval(() => {
-      checks++
-      if (checks > 10) { clearInterval(interval); return }
-      if (localStorage.getItem('tianko_show_seller_hint') === 'true') {
-        localStorage.removeItem('tianko_show_seller_hint')
-        setShowSellerHint(true)
-        setTimeout(() => setShowSellerHint(false), 4000)
-        clearInterval(interval)
-      }
-    }, 300)
-
-    return () => {
-      window.removeEventListener('storage', handleStorage)
-      clearInterval(interval)
-    }
   }, [])
+
+  useEffect(() => {
+    if (showSellerHint) {
+      const timer = setTimeout(() => {
+        if (onHintSeen) onHintSeen()
+      }, 4000)
+      return () => clearTimeout(timer)
+    }
+  }, [showSellerHint])
 
   async function checkUser() {
     const { data: { user } } = await supabase.auth.getUser()

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-function Disclaimer() {
+function Disclaimer({ onAccept }) {
   const [visible, setVisible] = useState(
     () => localStorage.getItem('tianko_disclaimer_accepted') !== 'true'
   )
@@ -9,7 +9,7 @@ function Disclaimer() {
 
   function handleAccept() {
     localStorage.setItem('tianko_disclaimer_accepted', 'true')
-    localStorage.setItem('tianko_show_seller_hint', 'true')
+    if (onAccept) onAccept()
     setVisible(false)
   }
 

@@ -5,6 +5,7 @@
 // ============================================================
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { useState } from 'react'
 
 import Home from './pages/Home'
 import Product from './pages/Product'
@@ -18,13 +19,15 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Disclaimer from './components/Disclaimer'
 
 function App() {
+  const [showSellerHint, setShowSellerHint] = useState(false)
+
   return (
     <Router>
-      <Disclaimer />
+      <Disclaimer onAccept={() => setShowSellerHint(true)} />
       <Routes>
 
         {/* 🌍 PÚBLICO */}
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Home showSellerHint={showSellerHint} onHintSeen={() => setShowSellerHint(false)} />} />
         <Route path="/producto/:id" element={<Product />} />
         <Route path="/tienda/:id" element={<Store />} />
         <Route path="/hub/:id" element={<MarketHub />} />
