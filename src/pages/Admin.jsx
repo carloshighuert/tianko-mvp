@@ -103,6 +103,7 @@ function TabTiendas({ hubs }) {
   const [storeDesc, setStoreDesc] = useState('')
   const [selectedHubs, setSelectedHubs] = useState([])
   const [saving, setSaving] = useState(false)
+  const [creatingStore, setCreatingStore] = useState(false)
   const [result, setResult] = useState(null)
   const [stores, setStores] = useState([])
   const [loadingStores, setLoadingStores] = useState(true)
@@ -179,10 +180,12 @@ function TabTiendas({ hubs }) {
   }
 
   async function handleCreate() {
+    if (creatingStore) return
     if (!sellerName.trim() || !sellerPhone.trim() || !storeName.trim()) {
       alert('Nombre del vendedor, teléfono y nombre de tienda son obligatorios')
       return
     }
+    setCreatingStore(true)
     setSaving(true)
     setResult(null)
     try {
@@ -214,6 +217,7 @@ function TabTiendas({ hubs }) {
       alert(`Error: ${err.message}`)
     } finally {
       setSaving(false)
+      setCreatingStore(false)
     }
   }
 
@@ -236,8 +240,8 @@ function TabTiendas({ hubs }) {
           onRemove={i => setSelectedHubs(selectedHubs.filter((_, idx) => idx !== i))}
           onAdd={() => setSelectedHubs([...selectedHubs, { hub_id: '', day_of_week: '' }])} />
 
-        <button style={{ ...btnPrimary, opacity: saving ? 0.6 : 1 }} onClick={handleCreate} disabled={saving}>
-          {saving ? 'Creando...' : 'Crear tienda →'}
+        <button style={{ ...btnPrimary, opacity: creatingStore ? 0.6 : 1 }} onClick={handleCreate} disabled={creatingStore}>
+          {creatingStore ? 'Creando...' : 'Crear tienda →'}
         </button>
 
         {result && (
