@@ -206,6 +206,22 @@ function TabTiendas({ hubs }) {
       if (sellerErr) throw sellerErr
       console.log('Seller creado:', newSeller)
 
+      const { data: existingSeller } = await supabase
+        .from('sellers')
+        .select('id')
+        .eq('phone', phone)
+        .eq('name', sellerName.trim())
+        .order('created_at', { ascending: false })
+        .limit(2)
+
+      console.log('Sellers existentes con mismo teléfono:', existingSeller)
+
+      if (existingSeller && existingSeller.length > 1) {
+        console.error('DUPLICADO DETECTADO - abortando')
+        await supabase.from('sellers').delete().eq('id', existingSeller[0].id)
+        return
+      }
+
       console.log('Insertando store...', storeName)
       const { data: newStore, error: storeErr } = await supabase
         .from('stores')
