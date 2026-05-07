@@ -9,6 +9,7 @@ function Disclaimer() {
 
   function handleAccept() {
     localStorage.setItem('tianko_disclaimer_accepted', 'true')
+    localStorage.setItem('tianko_show_seller_hint', 'true')
     setVisible(false)
   }
 

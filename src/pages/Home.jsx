@@ -32,10 +32,16 @@ function Home() {
   const [searchQuery, setSearchQuery] = useState('')
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [showSellerHint, setShowSellerHint] = useState(false)
 
   useEffect(() => {
     checkUser()
     fetchData()
+    if (localStorage.getItem('tianko_show_seller_hint') === 'true') {
+      setShowSellerHint(true)
+      localStorage.removeItem('tianko_show_seller_hint')
+      setTimeout(() => setShowSellerHint(false), 4000)
+    }
   }, [])
 
   async function checkUser() {
@@ -142,6 +148,41 @@ function Home() {
             {user ? 'Mi tienda' : 'Vender aquí'}
           </button>
         </div>
+
+        {/* ── HINT VENDEDOR ── */}
+        {showSellerHint && (
+          <div style={{
+            position: 'fixed',
+            top: 52,
+            right: 16,
+            zIndex: 1000,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            gap: 4,
+            animation: 'fadeInDown 0.4s ease'
+          }}>
+            <div style={{
+              background: '#F5BF3A',
+              color: '#0B365C',
+              padding: '8px 14px',
+              borderRadius: 20,
+              fontSize: 13,
+              fontWeight: 600,
+              whiteSpace: 'nowrap',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+            }}>
+              ¿Quieres vender? 👆
+            </div>
+            <div style={{
+              width: 2,
+              height: 20,
+              background: '#F5BF3A',
+              marginRight: 20,
+              animation: 'bounce 0.6s ease infinite alternate'
+            }} />
+          </div>
+        )}
 
         {/* ── BUSCADOR ── */}
         <input
