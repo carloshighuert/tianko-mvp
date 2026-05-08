@@ -18,7 +18,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import OnboardingSpotlight from '../components/OnboardingSpotlight'
 
 const capitalize = (str) => {
@@ -27,6 +27,7 @@ const capitalize = (str) => {
 }
 
 function Home({ showSellerHint, onHintSeen }) {
+  const navigate = useNavigate()
 
   const [hubs, setHubs] = useState([])
   const [products, setProducts] = useState([])
@@ -110,7 +111,7 @@ function Home({ showSellerHint, onHintSeen }) {
   )
 
   return (
-    <div style={{ background: '#f4f4f4', minHeight: '100vh' }}>
+    <div style={{ background: '#f4f4f4', minHeight: '100vh', maxWidth: '100vw', overflowX: 'hidden' }}>
       <div style={{ maxWidth: 500, margin: '0 auto', padding: 16 }}>
 
         {/* ── HEADER ── */}
@@ -187,45 +188,42 @@ function Home({ showSellerHint, onHintSeen }) {
                   📍 Tianguis y bazares
                 </h2>
 
-                {/* Scroll horizontal de hubs */}
-                <div className="hubs-scroll" style={{ display: 'flex', overflowX: 'auto', gap: 12, padding: '0 16px 8px 16px', scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch', margin: '0 -16px' }}>
+                {/* Grid 2 columnas de hubs */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: 12,
+                  marginBottom: 8
+                }}>
                   {hubs.map(hub => (
-                    <Link
+                    <div
                       key={hub.id}
-                      to={`/hub/${hub.id}`}
-                      style={{ textDecoration: 'none', flexShrink: 0 }}
+                      onClick={() => navigate(`/hub/${hub.id}`)}
+                      style={{
+                        background: '#1a1a2e',
+                        borderRadius: 12,
+                        padding: 14,
+                        cursor: 'pointer',
+                        minHeight: 120
+                      }}
                     >
-                      <div style={{
-                        minWidth: 'min(260px, 75vw)',
-                        flexShrink: 0,
-                        background: '#000',
-                        color: 'white',
-                        borderRadius: 14,
-                        padding: 16
-                      }}>
-                        <p style={{ margin: 0, fontSize: 11, opacity: 0.6 }}>
-                          {hub.hub_type || 'Tianguis'}
+                      <p style={{ fontSize: 10, color: '#999', margin: '0 0 4px', textTransform: 'uppercase' }}>
+                        {hub.hub_type || 'tianguis'}
+                      </p>
+                      <p style={{ fontSize: 14, fontWeight: 700, color: '#fff', margin: '0 0 8px', lineHeight: 1.3 }}>
+                        {hub.name}
+                      </p>
+                      {hub.schedule && (
+                        <p style={{ fontSize: 11, color: '#aaa', margin: '0 0 6px' }}>
+                          🕐 {hub.schedule}
                         </p>
-                        <p style={{ margin: '4px 0', fontWeight: 'bold', fontSize: 15 }}>
-                          {hub.name}
+                      )}
+                      {hub.storeCount > 0 && (
+                        <p style={{ fontSize: 11, color: '#F5BF3A', margin: 0 }}>
+                          👥 {hub.storeCount} {hub.storeCount === 1 ? 'puesto' : 'puestos'}
                         </p>
-                        {hub.location && (
-                          <p style={{ margin: 0, fontSize: 11, opacity: 0.7 }}>
-                            📍 {hub.location}
-                          </p>
-                        )}
-                        {hub.schedule && (
-                          <p style={{ margin: '4px 0 0', fontSize: 11, opacity: 0.7 }}>
-                            🕐 {hub.schedule}
-                          </p>
-                        )}
-                        {hub.storeCount > 0 && (
-                          <p style={{ margin: '4px 0 0', fontSize: 11, opacity: 0.8 }}>
-                            🏪 {hub.storeCount} {hub.storeCount === 1 ? 'puesto' : 'puestos'}
-                          </p>
-                        )}
-                      </div>
-                    </Link>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
@@ -246,7 +244,8 @@ function Home({ showSellerHint, onHintSeen }) {
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr',
-                gap: 12
+                gap: 12,
+                padding: '0 16px'
               }}>
                 {filteredProducts.map(p => (
                   <Link
