@@ -111,7 +111,7 @@ function Home({ showSellerHint, onHintSeen }) {
   )
 
   return (
-    <div style={{ background: '#f4f4f4', minHeight: '100vh', maxWidth: '100vw', overflowX: 'hidden' }}>
+    <div style={{ background: '#f4f4f4', minHeight: '100vh', overflowX: 'hidden', width: '100%' }}>
       <div style={{ maxWidth: 500, margin: '0 auto', padding: 16 }}>
 
         {/* ── HEADER ── */}
@@ -188,42 +188,74 @@ function Home({ showSellerHint, onHintSeen }) {
                   📍 Tianguis y bazares
                 </h2>
 
-                {/* Grid 2 columnas de hubs */}
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: 12,
-                  marginBottom: 8
-                }}>
-                  {hubs.map(hub => (
-                    <div
-                      key={hub.id}
-                      onClick={() => navigate(`/hub/${hub.id}`)}
-                      style={{
-                        background: '#1a1a2e',
-                        borderRadius: 12,
-                        padding: 14,
-                        cursor: 'pointer',
-                        minHeight: 120
-                      }}
-                    >
-                      <p style={{ fontSize: 10, color: '#999', margin: '0 0 4px', textTransform: 'uppercase' }}>
-                        {hub.hub_type || 'tianguis'}
-                      </p>
-                      <p style={{ fontSize: 14, fontWeight: 700, color: '#fff', margin: '0 0 8px', lineHeight: 1.3 }}>
-                        {hub.name}
-                      </p>
-                      {hub.schedule && (
-                        <p style={{ fontSize: 11, color: '#aaa', margin: '0 0 6px' }}>
-                          🕐 {hub.schedule}
+                {/* Scroll horizontal de hubs */}
+                <div style={{ width: '100%', overflowX: 'hidden', position: 'relative' }}>
+                  <div className="hubs-scroll" style={{
+                    display: 'flex',
+                    overflowX: 'auto',
+                    gap: 12,
+                    padding: '0 16px 16px 16px',
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                    WebkitOverflowScrolling: 'touch',
+                    scrollSnapType: 'x mandatory'
+                  }}>
+                    {hubs.map(hub => (
+                      <div
+                        key={hub.id}
+                        onClick={() => navigate(`/hub/${hub.id}`)}
+                        style={{
+                          minWidth: 180,
+                          maxWidth: 180,
+                          flexShrink: 0,
+                          scrollSnapAlign: 'start',
+                          background: '#1a1a2e',
+                          borderRadius: 12,
+                          padding: 14,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <p style={{ fontSize: 10, color: '#999', margin: '0 0 4px', textTransform: 'uppercase' }}>
+                          {hub.hub_type || 'tianguis'}
                         </p>
-                      )}
-                      {hub.storeCount > 0 && (
+                        <p style={{ fontSize: 13, fontWeight: 700, color: '#fff', margin: '0 0 8px', lineHeight: 1.3 }}>
+                          {hub.name}
+                        </p>
+                        {hub.schedule && (
+                          <p style={{ fontSize: 11, color: '#aaa', margin: '0 0 6px' }}>
+                            🕐 {hub.schedule}
+                          </p>
+                        )}
                         <p style={{ fontSize: 11, color: '#F5BF3A', margin: 0 }}>
-                          👥 {hub.storeCount} {hub.storeCount === 1 ? 'puesto' : 'puestos'}
+                          👥 {hub.storeCount || 0} puestos
                         </p>
-                      )}
-                    </div>
+                      </div>
+                    ))}
+                    <div style={{ minWidth: 8, flexShrink: 0 }} />
+                  </div>
+
+                  {/* Gradiente derecho — indica que hay más cards */}
+                  <div style={{
+                    position: 'absolute',
+                    right: 0,
+                    top: 0,
+                    bottom: 16,
+                    width: 40,
+                    background: 'linear-gradient(to right, transparent, rgba(245,245,245,0.9))',
+                    pointerEvents: 'none'
+                  }} />
+                </div>
+
+                {/* Puntos indicadores */}
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 20, marginTop: -8 }}>
+                  {hubs.map((_, i) => (
+                    <div key={i} style={{
+                      width: i === 0 ? 16 : 6,
+                      height: 6,
+                      borderRadius: 3,
+                      background: i === 0 ? '#0B365C' : '#ccc',
+                      transition: 'all 0.3s'
+                    }} />
                   ))}
                 </div>
               </div>
