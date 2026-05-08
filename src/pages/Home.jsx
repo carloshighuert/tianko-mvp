@@ -275,63 +275,66 @@ function Home({ showSellerHint, onHintSeen }) {
             ) : (
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
+                gridTemplateColumns: 'repeat(2, 1fr)',
                 gap: 12,
-                padding: '0 16px'
+                padding: '0 16px',
+                width: '100%',
+                boxSizing: 'border-box',
+                maxWidth: '100%'
               }}>
                 {filteredProducts.map(p => (
-                  <Link
+                  <div
                     key={p.id}
-                    to={`/producto/${p.id}`}
-                    style={{ textDecoration: 'none', color: 'inherit' }}
-                  >
-                    <div style={{
-                      background: 'white',
-                      borderRadius: 14,
+                    onClick={() => navigate(`/producto/${p.id}`)}
+                    style={{
+                      background: '#fff',
+                      borderRadius: 12,
                       overflow: 'hidden',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-                    }}>
+                      cursor: 'pointer',
+                      boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+                      width: '100%',
+                      boxSizing: 'border-box'
+                    }}
+                  >
+                    {p.image_url ? (
                       <img
                         src={p.image_url}
                         alt={p.title}
-                        style={{ width: '100%', height: 130, objectFit: 'cover', display: p.image_url ? 'block' : 'none' }}
+                        style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', display: 'block' }}
                         onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }}
                       />
-                      <div style={{
-                        display: p.image_url ? 'none' : 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: '#f5f5f5',
-                        height: 130,
-                        flexDirection: 'column',
-                        gap: 8
+                    ) : null}
+                    <div style={{
+                      display: p.image_url ? 'none' : 'flex',
+                      width: '100%',
+                      aspectRatio: '1/1',
+                      background: '#f5f5f5',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 32
+                    }}>🏷️</div>
+                    <div style={{ padding: '10px 12px' }}>
+                      <p style={{
+                        margin: '0 0 4px',
+                        fontWeight: 600,
+                        fontSize: 13,
+                        color: '#111',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
                       }}>
-                        <span style={{ fontSize: 32 }}>🏷️</span>
-                        <span style={{ fontSize: 12, color: '#999' }}>Sin foto</span>
-                      </div>
-                      <div style={{ padding: '8px 10px 10px' }}>
-                        <p style={{
-                          margin: 0,
-                          color: '#111111',
-                          fontWeight: 600,
-                          fontSize: 14,
-                          overflow: 'hidden',
-                          whiteSpace: 'nowrap',
-                          textOverflow: 'ellipsis'
-                        }}>
-                          {capitalize(p.title)}
+                        {capitalize(p.title)}
+                      </p>
+                      <p style={{ margin: '0 0 4px', fontWeight: 700, fontSize: 15, color: '#111' }}>
+                        ${p.price}
+                      </p>
+                      {p.store?.name && (
+                        <p style={{ margin: 0, fontSize: 11, color: '#666' }}>
+                          {p.store.name}
                         </p>
-                        <p style={{ margin: '2px 0 0', color: '#111111', fontWeight: 700, fontSize: 16 }}>
-                          ${p.price}
-                        </p>
-                        {p.store?.name && (
-                          <p style={{ margin: '2px 0 0', color: '#444444', fontSize: 12 }}>
-                            {p.store.name}
-                          </p>
-                        )}
-                      </div>
+                      )}
                     </div>
-                  </Link>
+                  </div>
                 ))}
               </div>
             )}
