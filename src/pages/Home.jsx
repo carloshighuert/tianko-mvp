@@ -188,7 +188,7 @@ function Home({ showSellerHint, onHintSeen }) {
                 </h2>
 
                 {/* Scroll horizontal de hubs */}
-                <div className="hubs-scroll" style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingLeft: 16, paddingRight: 16, paddingBottom: 8, scrollbarWidth: 'none', msOverflowStyle: 'none', margin: '0 -16px' }}>
+                <div className="hubs-scroll" style={{ display: 'flex', overflowX: 'auto', gap: 12, padding: '0 16px 8px 16px', scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch', margin: '0 -16px' }}>
                   {hubs.map(hub => (
                     <Link
                       key={hub.id}
@@ -196,7 +196,7 @@ function Home({ showSellerHint, onHintSeen }) {
                       style={{ textDecoration: 'none', flexShrink: 0 }}
                     >
                       <div style={{
-                        minWidth: 160,
+                        minWidth: 'min(260px, 75vw)',
                         flexShrink: 0,
                         background: '#000',
                         color: 'white',
