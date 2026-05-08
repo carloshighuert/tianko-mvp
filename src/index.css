@@ -58,6 +58,10 @@ body {
   color: #999999;
 }
 
+.hubs-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 #root {
   width: 1126px;
   max-width: 100%;
