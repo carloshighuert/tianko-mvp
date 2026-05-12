@@ -129,11 +129,28 @@ function Dashboard() {
     if (!sellerName || !sellerPhone) { alert('Necesitamos tu nombre y teléfono'); return }
     setSavingSeller(true)
     try {
-      const { data, error } = await supabase
+      const { data, error: sellerError } = await supabase
         .from('sellers')
         .insert([{ user_id: user.id, name: sellerName, phone: sellerPhone.replace(/\D/g, '') }])
         .select().single()
-      if (error) throw error
+      if (sellerError) {
+        if (sellerError.code === '23505') {
+          const { data: existingSeller } = await supabase
+            .from('sellers')
+            .select('*')
+            .eq('phone', sellerPhone.replace(/\D/g, ''))
+            .single()
+          if (existingSeller) {
+            await supabase
+              .from('sellers')
+              .update({ user_id: user.id })
+              .eq('id', existingSeller.id)
+            setSeller(existingSeller)
+            return
+          }
+        }
+        throw sellerError
+      }
       setSeller(data)
     } catch (err) {
       console.error('[handleCreateSeller]', err)
