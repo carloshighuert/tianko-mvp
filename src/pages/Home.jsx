@@ -60,10 +60,10 @@ function Home({ showSellerHint, onHintSeen }) {
 
         supabase
           .from('products')
-          .select('*')
-          .neq('status', 'vendido')
+          .select('*, stores(name)')
+          .eq('status', 'publicado')
           .order('created_at', { ascending: false })
-          .limit(20),
+          .limit(50),
 
         supabase
           .from('stores')
@@ -73,6 +73,8 @@ function Home({ showSellerHint, onHintSeen }) {
           .from('store_hubs')
           .select('hub_id')
       ])
+
+      console.log('Productos en Home:', productsRes.data?.length, productsRes.error)
 
       // Count distinct stores per hub
       const hubCounts = {}
