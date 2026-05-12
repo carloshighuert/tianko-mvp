@@ -60,7 +60,7 @@ function Home({ showSellerHint, onHintSeen }) {
 
         supabase
           .from('products')
-          .select('*, stores(name)')
+          .select('*')
           .eq('status', 'publicado')
           .order('created_at', { ascending: false })
           .limit(50),
@@ -91,7 +91,7 @@ function Home({ showSellerHint, onHintSeen }) {
 
       const enriched = productsRes.data?.map(p => ({
         ...p,
-        store: storesMap[p.store_id] || null
+        storeName: storesMap[p.store_id]?.name || ''
       })) || []
 
       setProducts(enriched)
@@ -330,9 +330,9 @@ function Home({ showSellerHint, onHintSeen }) {
                       <p style={{ margin: '0 0 4px', fontWeight: 700, fontSize: 15, color: '#111' }}>
                         ${p.price}
                       </p>
-                      {p.store?.name && (
+                      {p.storeName && (
                         <p style={{ margin: 0, fontSize: 11, color: '#666' }}>
-                          {p.store.name}
+                          {p.storeName}
                         </p>
                       )}
                     </div>
