@@ -15,6 +15,7 @@ import Dashboard from './pages/Dashboard'
 import MarketHub from './pages/MarketHub'
 import Review from './pages/Review'
 import Admin from './pages/Admin'
+import Pitch from './pages/Pitch'
 import ProtectedRoute from './components/ProtectedRoute'
 import Disclaimer from './components/Disclaimer'
 
@@ -32,6 +33,7 @@ function App() {
         <Route path="/tienda/:id" element={<Store />} />
         <Route path="/hub/:id" element={<MarketHub />} />
         <Route path="/resena/:token" element={<Review />} />
+        <Route path="/pitch" element={<Pitch />} />
 
         {/* 🔐 AUTH */}
         <Route path="/login" element={<Login />} />
