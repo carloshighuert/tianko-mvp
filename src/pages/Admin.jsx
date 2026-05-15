@@ -435,15 +435,21 @@ function TabProductos({ hubs }) {
       }
 
       console.log('Actualizando producto con imageUrl:', imageUrl)
-      const { error: updateError } = await supabase
+      const { data: updatedProduct, error: updateError } = await supabase
         .from('products')
         .update({ title: editTitle.trim(), price: parseFloat(editPrice), category: editCategory.trim() || null, image_url: imageUrl })
         .eq('id', p.id)
+        .select()
+        .single()
+      console.log('UPDATE result:', { data: updatedProduct, error: updateError })
       if (updateError) {
         console.error('Error UPDATE:', updateError)
         throw updateError
       }
-      console.log('Producto actualizado exitosamente')
+      if (!updatedProduct) {
+        throw new Error('UPDATE no devolvió datos - posible problema de RLS')
+      }
+      console.log('Producto actualizado exitosamente:', updatedProduct)
 
       setEditingProductId(null)
       setNewImage(null)
