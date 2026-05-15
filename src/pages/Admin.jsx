@@ -894,7 +894,8 @@ function Admin() {
   const tabs = [
     { key: 'tiendas', label: 'Tiendas' },
     { key: 'productos', label: 'Productos' },
-    { key: 'hubs', label: 'Hubs' }
+    { key: 'hubs', label: 'Hubs' },
+    { key: 'metrics', label: '📊 Métricas' }
   ]
 
   return (
@@ -939,8 +940,151 @@ function Admin() {
         {activeTab === 'tiendas' && <TabTiendas hubs={hubs} />}
         {activeTab === 'productos' && <TabProductos hubs={hubs} />}
         {activeTab === 'hubs' && <TabHubs hubs={hubs} onHubsChange={fetchHubs} />}
+        {activeTab === 'metrics' && <TabMetrics />}
       </div>
 
+    </div>
+  )
+}
+
+// ── Tab 4: Métricas ──────────────────────────────────────────
+function TabMetrics() {
+  const [metrics, setMetrics] = useState({
+    vendedores: 0,
+    productos: 0,
+    tiendas: 0,
+    tianguis: 0,
+    clicksWhatsapp: 0,
+    productosVendidos: 0,
+    loading: true
+  })
+
+  useEffect(() => {
+    loadMetrics()
+  }, [])
+
+  async function loadMetrics() {
+    const [sellers, products, stores, hubs, clicks, sold] = await Promise.all([
+      supabase.from('sellers').select('id', { count: 'exact', head: true }),
+      supabase.from('products').select('id', { count: 'exact', head: true }).eq('status', 'publicado'),
+      supabase.from('stores').select('id', { count: 'exact', head: true }),
+      supabase.from('market_hubs').select('id', { count: 'exact', head: true }),
+      supabase.from('lead_events').select('id', { count: 'exact', head: true }).eq('type', 'click_whatsapp'),
+      supabase.from('products').select('id', { count: 'exact', head: true }).eq('status', 'vendido')
+    ])
+
+    setMetrics({
+      vendedores: sellers.count || 0,
+      productos: products.count || 0,
+      tiendas: stores.count || 0,
+      tianguis: hubs.count || 0,
+      clicksWhatsapp: clicks.count || 0,
+      productosVendidos: sold.count || 0,
+      loading: false
+    })
+  }
+
+  if (metrics.loading) {
+    return (
+      <div style={{ padding: 40, textAlign: 'center' }}>
+        <p>Cargando métricas...</p>
+      </div>
+    )
+  }
+
+  const cards = [
+    { label: 'Vendedores activos', value: metrics.vendedores, icon: '👥', color: '#4CAF50' },
+    { label: 'Tiendas creadas', value: metrics.tiendas, icon: '🏪', color: '#2196F3' },
+    { label: 'Productos publicados', value: metrics.productos, icon: '📦', color: '#FF9800' },
+    { label: 'Productos vendidos', value: metrics.productosVendidos, icon: '✅', color: '#9C27B0' },
+    { label: 'Tianguis activos', value: metrics.tianguis, icon: '🏛️', color: '#00BCD4' },
+    { label: 'Clicks a WhatsApp', value: metrics.clicksWhatsapp, icon: '💬', color: '#8BC34A' }
+  ]
+
+  return (
+    <div style={{ padding: 20 }}>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 24
+      }}>
+        <h2 style={{ margin: 0, fontSize: 24, fontWeight: 700 }}>
+          📊 Dashboard de Métricas
+        </h2>
+        <button
+          onClick={loadMetrics}
+          style={{
+            padding: '8px 16px',
+            background: '#F5BF3A',
+            color: '#0B365C',
+            border: 'none',
+            borderRadius: 8,
+            fontSize: 14,
+            fontWeight: 600,
+            cursor: 'pointer'
+          }}>
+          🔄 Actualizar
+        </button>
+      </div>
+
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+        gap: 16,
+        marginBottom: 32
+      }}>
+        {cards.map((card, i) => (
+          <div key={i} style={{
+            background: '#fff',
+            borderRadius: 12,
+            padding: 24,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            border: `2px solid ${card.color}20`
+          }}>
+            <div style={{ fontSize: 32, marginBottom: 12 }}>{card.icon}</div>
+            <div style={{ fontSize: 40, fontWeight: 800, color: card.color, marginBottom: 4 }}>
+              {card.value}
+            </div>
+            <div style={{ fontSize: 14, color: '#666', fontWeight: 500 }}>
+              {card.label}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Ratio de conversión */}
+      <div style={{
+        background: 'linear-gradient(135deg, #0B365C 0%, #1a4d7a 100%)',
+        borderRadius: 16,
+        padding: 32,
+        color: '#fff',
+        textAlign: 'center'
+      }}>
+        <h3 style={{ margin: '0 0 8px', fontSize: 18, color: '#F5BF3A', fontWeight: 700 }}>
+          Tasa de conversión
+        </h3>
+        <div style={{ fontSize: 56, fontWeight: 800, margin: '8px 0' }}>
+          {metrics.productos > 0
+            ? ((metrics.clicksWhatsapp / metrics.productos) * 100).toFixed(1)
+            : '0.0'}%
+        </div>
+        <p style={{ margin: 0, fontSize: 14, opacity: 0.8 }}>
+          {metrics.clicksWhatsapp} clicks de {metrics.productos} productos publicados
+        </p>
+      </div>
+
+      <div style={{
+        marginTop: 24,
+        padding: 16,
+        background: '#f5f5f5',
+        borderRadius: 8,
+        fontSize: 12,
+        color: '#666',
+        textAlign: 'center'
+      }}>
+        Última actualización: {new Date().toLocaleString('es-MX')}
+      </div>
     </div>
   )
 }
