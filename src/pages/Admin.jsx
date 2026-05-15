@@ -413,14 +413,20 @@ function TabProductos({ hubs }) {
     if (!editTitle.trim() || !editPrice) { alert('Título y precio son obligatorios'); return }
     if (isNaN(editPrice) || parseFloat(editPrice) <= 0) { alert('El precio debe ser mayor a $0'); return }
     setSavingEdit(true)
+    console.log('=== INICIO EDIT ===')
+    console.log('newImageFile:', newImage)
+    console.log('editingProduct:', p)
     try {
       let imageUrl = p.image_url
 
+      console.log('Hay newImageFile?', !!newImage)
       if (newImage) {
         const fileName = `${p.store_id}/admin-${Date.now()}.jpg`
+        console.log('Intentando subir:', fileName)
         const { error: uploadError } = await supabase.storage
           .from('PRODUCTS')
           .upload(fileName, newImage, { contentType: 'image/jpeg', upsert: true })
+        console.log('Upload result:', { error: uploadError })
         if (uploadError) throw uploadError
         const { data: urlData } = supabase.storage.from('PRODUCTS').getPublicUrl(fileName)
         imageUrl = urlData.publicUrl
