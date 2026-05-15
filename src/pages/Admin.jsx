@@ -361,6 +361,7 @@ function TabProductos({ hubs }) {
   const [newImage, setNewImage] = useState(null)
   const [newImagePreview, setNewImagePreview] = useState(null)
   const [savingEdit, setSavingEdit] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
 
   useEffect(() => {
     fetchStores()
@@ -528,7 +529,8 @@ function TabProductos({ hubs }) {
       } else {
         setTitle(''); setPrice(''); setCategory(''); setFile(null); setPreview(null)
         fetchRecentProducts()
-        alert('✓ Producto publicado')
+        setSuccessMessage('✅ Producto publicado correctamente')
+        setTimeout(() => setSuccessMessage(''), 3000)
       }
     } catch (err) {
       console.error('[TabProductos] handleCreate:', err)
@@ -541,6 +543,20 @@ function TabProductos({ hubs }) {
       {/* Formulario producto individual */}
       <div style={{ background: 'white', borderRadius: 12, padding: 18, marginBottom: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
         <p style={sectionTitle}>Subir producto</p>
+
+        {successMessage && (
+          <div style={{
+            padding: '12px 16px',
+            background: '#4CAF50',
+            color: '#fff',
+            borderRadius: 8,
+            marginBottom: 16,
+            fontWeight: 600,
+            textAlign: 'center'
+          }}>
+            {successMessage}
+          </div>
+        )}
 
         <select
           value={selectedStoreId}
