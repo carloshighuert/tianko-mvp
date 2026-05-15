@@ -419,10 +419,10 @@ function TabProductos({ hubs }) {
       if (newImage) {
         const fileName = `${p.store_id}/admin-${Date.now()}.jpg`
         const { error: uploadError } = await supabase.storage
-          .from('products')
+          .from('PRODUCTS')
           .upload(fileName, newImage, { contentType: 'image/jpeg', upsert: true })
         if (uploadError) throw uploadError
-        const { data: urlData } = supabase.storage.from('products').getPublicUrl(fileName)
+        const { data: urlData } = supabase.storage.from('PRODUCTS').getPublicUrl(fileName)
         imageUrl = urlData.publicUrl
       }
 
@@ -471,9 +471,9 @@ function TabProductos({ hubs }) {
       const compressed = await compressImage(file)
       const fileName = `${storeId}/${Date.now()}.jpg`
       const { error } = await supabase.storage
-        .from('products').upload(fileName, compressed, { contentType: 'image/jpeg', upsert: false })
+        .from('PRODUCTS').upload(fileName, compressed, { contentType: 'image/jpeg', upsert: false })
       if (error) throw error
-      const { data } = supabase.storage.from('products').getPublicUrl(fileName)
+      const { data } = supabase.storage.from('PRODUCTS').getPublicUrl(fileName)
       return data.publicUrl
     } catch (err) {
       console.error('[uploadImage]', err)
