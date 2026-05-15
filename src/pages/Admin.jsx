@@ -416,51 +416,31 @@ function TabProductos({ hubs }) {
     try {
       let imageUrl = p.image_url
 
-      console.log('1. newImage existe:', !!newImage)
-
       if (newImage) {
         const fileName = `${p.store_id}/admin-${Date.now()}.jpg`
-        console.log('2. Subiendo archivo:', fileName)
-
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('products')
           .upload(fileName, newImage, { contentType: 'image/jpeg', upsert: true })
-
-        console.log('3. Upload result:', uploadData, uploadError)
-
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage
-            .from('products')
-            .getPublicUrl(fileName)
-
-          console.log('4. URL pública:', urlData?.publicUrl)
-          imageUrl = urlData?.publicUrl
-        }
+        if (uploadError) throw uploadError
+        const { data: urlData } = supabase.storage.from('products').getPublicUrl(fileName)
+        imageUrl = urlData.publicUrl
       }
-
-      console.log('5. imageUrl final:', imageUrl)
 
       const { error: updateError } = await supabase
         .from('products')
         .update({ title: editTitle.trim(), price: parseFloat(editPrice), category: editCategory.trim() || null, image_url: imageUrl })
         .eq('id', p.id)
-
-      console.log('6. Update result:', updateError)
-
       if (updateError) throw updateError
-
-      setProducts(prev => prev.map(item =>
-        item.id === p.id
-          ? { ...item, title: editTitle.trim(), price: parseFloat(editPrice), category: editCategory.trim() || null, image_url: imageUrl, storeName: item.storeName }
-          : item
-      ))
 
       setEditingProductId(null)
       setNewImage(null)
       setNewImagePreview(null)
+      fetchRecentProducts()
+      setSuccessMessage('✅ Producto actualizado correctamente')
+      setTimeout(() => setSuccessMessage(''), 3000)
     } catch (err) {
       console.error('[handleSaveEditProduct]', err)
-      alert(`Error: ${err.message}`)
+      alert(`Error al guardar: ${err.message}`)
     } finally { setSavingEdit(false) }
   }
 
