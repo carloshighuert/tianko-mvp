@@ -419,24 +419,31 @@ function TabProductos({ hubs }) {
     try {
       let imageUrl = p.image_url
 
-      console.log('Hay newImageFile?', !!newImage)
       if (newImage) {
-        const fileName = `${p.store_id}/admin-${Date.now()}.jpg`
-        console.log('Intentando subir:', fileName)
+        const fileName = `admin-${Date.now()}.jpg`
+        console.log('Subiendo archivo:', fileName)
         const { error: uploadError } = await supabase.storage
           .from('PRODUCTS')
-          .upload(fileName, newImage, { contentType: 'image/jpeg', upsert: true })
-        console.log('Upload result:', { error: uploadError })
-        if (uploadError) throw uploadError
+          .upload(fileName, newImage)
+        if (uploadError) {
+          console.error('Error upload:', uploadError)
+          throw uploadError
+        }
         const { data: urlData } = supabase.storage.from('PRODUCTS').getPublicUrl(fileName)
         imageUrl = urlData.publicUrl
+        console.log('URL generada:', imageUrl)
       }
 
+      console.log('Actualizando producto con imageUrl:', imageUrl)
       const { error: updateError } = await supabase
         .from('products')
         .update({ title: editTitle.trim(), price: parseFloat(editPrice), category: editCategory.trim() || null, image_url: imageUrl })
         .eq('id', p.id)
-      if (updateError) throw updateError
+      if (updateError) {
+        console.error('Error UPDATE:', updateError)
+        throw updateError
+      }
+      console.log('Producto actualizado exitosamente')
 
       setEditingProductId(null)
       setNewImage(null)
