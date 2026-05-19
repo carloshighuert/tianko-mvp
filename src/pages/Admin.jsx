@@ -340,9 +340,9 @@ function TabTiendas({ hubs }) {
 }
 
 const CATEGORIAS = [
-  'Ropa', 'Tenis y Calzado', 'Electrónicos', 'Antigüedades', 'Vintage',
-  'Hogar', 'Libros', 'Arte', 'Artesanía', 'Juguetes',
-  'Deportes', 'Accesorios', 'Joyería', 'Otro'
+  'Ropa y Moda', 'Calzado', 'Electrónicos', 'Accesorios', 'Hogar y Cocina',
+  'Antigüedades y Vintage', 'Libros y Revistas', 'Arte y Artesanía', 'Juguetes',
+  'Deportes', 'Herramientas', 'Música', 'Plantas y Jardín', 'Alimentos', 'Otro'
 ]
 
 // ────────────────────────────────────────────────────────────────
