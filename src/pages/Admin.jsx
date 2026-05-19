@@ -339,6 +339,12 @@ function TabTiendas({ hubs }) {
   )
 }
 
+const CATEGORIAS = [
+  'Ropa', 'Tenis y Calzado', 'Electrónicos', 'Antigüedades', 'Vintage',
+  'Hogar', 'Libros', 'Arte', 'Artesanía', 'Juguetes',
+  'Deportes', 'Accesorios', 'Joyería', 'Otro'
+]
+
 // ────────────────────────────────────────────────────────────────
 // Tab 2: Productos
 // ────────────────────────────────────────────────────────────────
@@ -583,7 +589,10 @@ function TabProductos({ hubs }) {
 
         <input style={inputStyle} placeholder="Título *" value={title} onChange={e => setTitle(e.target.value)} />
         <input style={inputStyle} placeholder="Precio *" value={price} onChange={e => setPrice(e.target.value)} type="number" inputMode="decimal" />
-        <input style={inputStyle} placeholder="Categoría (opcional)" value={category} onChange={e => setCategory(e.target.value)} />
+        <select value={category} onChange={e => setCategory(e.target.value)} style={{ ...inputStyle, appearance: 'auto' }}>
+          <option value="">Seleccionar categoría</option>
+          {CATEGORIAS.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+        </select>
 
         <button style={{ ...btnPrimary, opacity: saving ? 0.6 : 1 }} onClick={handleCreate} disabled={saving}>
           {saving ? 'Publicando...' : 'Publicar producto →'}
@@ -658,7 +667,10 @@ function TabProductos({ hubs }) {
                   )}
                   <input style={{ ...inputStyle, marginBottom: 8 }} placeholder="Título *" value={editTitle} onChange={e => setEditTitle(e.target.value)} />
                   <input style={{ ...inputStyle, marginBottom: 8 }} placeholder="Precio *" value={editPrice} onChange={e => setEditPrice(e.target.value)} type="number" inputMode="decimal" />
-                  <input style={{ ...inputStyle, marginBottom: 8 }} placeholder="Categoría" value={editCategory} onChange={e => setEditCategory(e.target.value)} />
+                  <select value={editCategory} onChange={e => setEditCategory(e.target.value)} style={{ ...inputStyle, marginBottom: 8, appearance: 'auto' }}>
+                    <option value="">Seleccionar categoría</option>
+                    {CATEGORIAS.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                  </select>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button onClick={cancelEditProduct}
                       style={{ flex: 1, padding: 10, background: 'none', border: '1px solid #ddd', borderRadius: 8, cursor: 'pointer', fontSize: 14 }}>

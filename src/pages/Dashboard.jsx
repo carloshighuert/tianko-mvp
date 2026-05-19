@@ -20,6 +20,12 @@
 // ============================================================
 
 import { useEffect, useState } from 'react'
+
+const CATEGORIAS = [
+  'Ropa', 'Tenis y Calzado', 'Electrónicos', 'Antigüedades', 'Vintage',
+  'Hogar', 'Libros', 'Arte', 'Artesanía', 'Juguetes',
+  'Deportes', 'Accesorios', 'Joyería', 'Otro'
+]
 import { supabase } from '../supabaseClient'
 import BulkUpload from '../components/BulkUpload'
 
@@ -47,6 +53,8 @@ function Dashboard() {
   const [copiedId, setCopiedId] = useState(null)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
+  const [onboardingStep, setOnboardingStep] = useState(1)
+  const [showSuccess, setShowSuccess] = useState(false)
   const [reviewCopiedId, setReviewCopiedId] = useState(null)
   const [editingProduct, setEditingProduct] = useState(null)
   const [editTitle, setEditTitle] = useState('')
@@ -123,16 +131,23 @@ function Dashboard() {
   }
 
   // ============================================================
-  // 👤 CREAR SELLER
+  // 👤 CREAR SELLER + STORE (onboarding unificado)
   // ============================================================
   async function handleCreateSeller() {
-    if (!sellerName || !sellerPhone) { alert('Necesitamos tu nombre y teléfono'); return }
+    if (!sellerName || !sellerPhone || !storeName) {
+      alert('Necesitamos tu nombre, teléfono y nombre de tu puesto')
+      return
+    }
+    if (!acceptedTerms) { alert('Debes aceptar los términos'); return }
     setSavingSeller(true)
     try {
+      let sellerRecord
+
       const { data, error: sellerError } = await supabase
         .from('sellers')
         .insert([{ user_id: user.id, name: sellerName, phone: sellerPhone.replace(/\D/g, '') }])
         .select().single()
+
       if (sellerError) {
         if (sellerError.code === '23505') {
           const { data: existingSeller } = await supabase
@@ -141,17 +156,30 @@ function Dashboard() {
             .eq('phone', sellerPhone.replace(/\D/g, ''))
             .single()
           if (existingSeller) {
-            await supabase
-              .from('sellers')
-              .update({ user_id: user.id })
-              .eq('id', existingSeller.id)
-            setSeller(existingSeller)
-            return
-          }
-        }
-        throw sellerError
+            await supabase.from('sellers').update({ user_id: user.id }).eq('id', existingSeller.id)
+            sellerRecord = existingSeller
+          } else throw sellerError
+        } else throw sellerError
+      } else {
+        sellerRecord = data
       }
-      setSeller(data)
+
+      const { data: storeData, error: storeError } = await supabase
+        .from('stores')
+        .insert([{
+          seller_id: sellerRecord.id,
+          name: storeName,
+          whatsapp_number: sellerPhone.replace(/\D/g, ''),
+          description: null
+        }])
+        .select().single()
+      if (storeError) throw storeError
+
+      setSeller(sellerRecord)
+      setStore(storeData)
+      setShowSuccess(true)
+      setTimeout(() => setShowSuccess(false), 2000)
+
     } catch (err) {
       console.error('[handleCreateSeller]', err)
       alert('Error al guardar. Intenta de nuevo.')
@@ -481,112 +509,150 @@ function Dashboard() {
     <div style={{ padding: 20, textAlign: 'center' }}><p>Cargando tu tienda...</p></div>
   )
 
-  // ── ONBOARDING PASO 0: bienvenida ───────────────────────────
-  if (!seller && !showOnboarding) return (
-    <div style={{ textAlign: 'center', padding: '40px 24px', maxWidth: 400, margin: '0 auto' }}>
-      <img src="/tianko-logo.png" alt="Tianko"
-        style={{ height: 80, width: 'auto', marginBottom: 24 }} />
-      <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>
-        ¡Bienvenido a Tianko! 🎉
-      </h2>
-      <p style={{ color: '#555', fontSize: 15, marginBottom: 4 }}>
-        Tu tianguis, ahora digital
-      </p>
-      <p style={{ color: '#777', fontSize: 14, marginBottom: 32 }}>
-        En 2 minutos tendrás tu puesto listo para vender.
-      </p>
-      <button onClick={() => setShowOnboarding(true)} style={{
-        background: '#111', color: '#fff', border: 'none', borderRadius: 12,
-        padding: '14px 32px', fontSize: 16, fontWeight: 600, cursor: 'pointer', width: '100%'
-      }}>
-        Crear mi puesto →
-      </button>
-      <p style={{ marginTop: 16, fontSize: 13, color: '#999' }}>
-        ¿Solo quieres explorar?{' '}
-        <a href="/" style={{ color: '#666', marginLeft: 4 }}>Ver productos →</a>
-      </p>
+  // ── PANTALLA DE ÉXITO ────────────────────────────────────────
+  if (showSuccess) return (
+    <div style={{ textAlign: 'center', padding: '80px 24px', maxWidth: 400, margin: '0 auto' }}>
+      <div style={{ fontSize: 64, marginBottom: 16 }}>🎉</div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>¡Tu tienda está lista!</h2>
+      <p style={{ color: '#555', fontSize: 15 }}>Preparando tu dashboard...</p>
     </div>
   )
 
-  // ── ONBOARDING PASO 1: seller ────────────────────────────────
+  // ── ONBOARDING (3 pasos) ─────────────────────────────────────
   if (!seller) return (
-    <div style={{ padding: 20, maxWidth: 400, margin: '0 auto' }}>
-      <h2>¡Bienvenido a Tianko! 👋</h2>
-      <p style={{ color: '#666', marginBottom: 20 }}>Primero dinos quién eres</p>
-      <input placeholder="Tu nombre completo *" value={sellerName}
-        onChange={(e) => setSellerName(e.target.value)}
-        style={{ width: '100%', padding: 12, marginBottom: 10, fontSize: 16, boxSizing: 'border-box' }} />
-      <input placeholder="Tu teléfono (10 dígitos) *" value={sellerPhone}
-        onChange={(e) => setSellerPhone(e.target.value)} type="tel"
-        style={{ width: '100%', padding: 12, marginBottom: 16, fontSize: 16, boxSizing: 'border-box' }} />
-      <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start',
-        fontSize: 13, color: '#555', marginBottom: 16, cursor: 'pointer' }}>
-        <input type="checkbox"
-          checked={acceptedTerms}
-          onChange={(e) => setAcceptedTerms(e.target.checked)}
-          style={{ marginTop: 2 }} />
-        <span>
-          Acepto que soy responsable de los productos que publico.
-          Me comprometo a no vender artículos ilegales, robados o
-          falsificados. Entiendo que Tianko puede eliminar mi cuenta
-          si incumplo estas reglas.
-        </span>
-      </label>
-      <button onClick={handleCreateSeller} disabled={savingSeller || !acceptedTerms}
-        style={{ width: '100%', padding: 14, background: savingSeller || !acceptedTerms ? '#ccc' : '#000',
-          color: 'white', border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 'bold',
-          cursor: !acceptedTerms ? 'not-allowed' : 'pointer' }}>
-        {savingSeller ? 'Guardando...' : 'Continuar →'}
-      </button>
+    <div style={{ padding: '40px 24px', maxWidth: 400, margin: '0 auto' }}>
+      <img src="/tianko-logo.png" alt="Tianko"
+        style={{ height: 60, width: 'auto', marginBottom: 32, display: 'block' }} />
+
+      {/* Barra de progreso */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 32 }}>
+        {[1, 2, 3].map(s => (
+          <div key={s} style={{
+            flex: 1, height: 4, borderRadius: 2,
+            background: s <= onboardingStep ? '#000' : '#e0e0e0',
+            transition: 'background 0.3s'
+          }} />
+        ))}
+      </div>
+
+      {/* Paso 1: nombre */}
+      {onboardingStep === 1 && (
+        <>
+          <p style={{ fontSize: 13, color: '#999', margin: '0 0 8px' }}>Paso 1 de 3</p>
+          <h2 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 8px', color: '#111' }}>¿Cómo te llamas?</h2>
+          <p style={{ color: '#666', fontSize: 14, margin: '0 0 24px' }}>Tu nombre como vendedor</p>
+          <input
+            placeholder="Tu nombre completo *"
+            value={sellerName}
+            onChange={(e) => setSellerName(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && sellerName.trim()) setOnboardingStep(2) }}
+            autoFocus
+            style={{ width: '100%', padding: 14, fontSize: 16, borderRadius: 12,
+              border: '1.5px solid #ddd', boxSizing: 'border-box', marginBottom: 16 }}
+          />
+          <button
+            onClick={() => { if (!sellerName.trim()) { alert('Escribe tu nombre'); return }; setOnboardingStep(2) }}
+            style={{ width: '100%', padding: 14, background: '#000', color: '#fff',
+              border: 'none', borderRadius: 12, fontSize: 16, fontWeight: 600, cursor: 'pointer' }}>
+            Siguiente →
+          </button>
+          <p style={{ marginTop: 16, fontSize: 13, color: '#999', textAlign: 'center' }}>
+            ¿Solo quieres explorar?{' '}
+            <a href="/" style={{ color: '#666' }}>Ver productos →</a>
+          </p>
+        </>
+      )}
+
+      {/* Paso 2: teléfono */}
+      {onboardingStep === 2 && (
+        <>
+          <p style={{ fontSize: 13, color: '#999', margin: '0 0 8px' }}>Paso 2 de 3</p>
+          <h2 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 8px', color: '#111' }}>Tu número de WhatsApp</h2>
+          <p style={{ color: '#666', fontSize: 14, margin: '0 0 24px' }}>Los compradores te contactarán aquí</p>
+          <input
+            placeholder="10 dígitos *"
+            value={sellerPhone}
+            onChange={(e) => setSellerPhone(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && sellerPhone.trim()) setOnboardingStep(3) }}
+            type="tel"
+            autoFocus
+            style={{ width: '100%', padding: 14, fontSize: 16, borderRadius: 12,
+              border: '1.5px solid #ddd', boxSizing: 'border-box', marginBottom: 16 }}
+          />
+          <button
+            onClick={() => { if (!sellerPhone.trim()) { alert('Escribe tu teléfono'); return }; setOnboardingStep(3) }}
+            style={{ width: '100%', padding: 14, background: '#000', color: '#fff',
+              border: 'none', borderRadius: 12, fontSize: 16, fontWeight: 600, cursor: 'pointer' }}>
+            Siguiente →
+          </button>
+          <button onClick={() => setOnboardingStep(1)}
+            style={{ width: '100%', padding: 10, background: 'none', border: 'none',
+              color: '#999', fontSize: 14, cursor: 'pointer', marginTop: 8 }}>
+            ← Atrás
+          </button>
+        </>
+      )}
+
+      {/* Paso 3: nombre del puesto + términos */}
+      {onboardingStep === 3 && (
+        <>
+          <p style={{ fontSize: 13, color: '#999', margin: '0 0 8px' }}>Paso 3 de 3</p>
+          <h2 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 8px', color: '#111' }}>¿Cómo se llama tu puesto?</h2>
+          <p style={{ color: '#666', fontSize: 14, margin: '0 0 24px' }}>El nombre que verán los compradores</p>
+          <input
+            placeholder="Nombre de tu puesto *"
+            value={storeName}
+            onChange={(e) => setStoreName(e.target.value)}
+            autoFocus
+            style={{ width: '100%', padding: 14, fontSize: 16, borderRadius: 12,
+              border: '1.5px solid #ddd', boxSizing: 'border-box', marginBottom: 16 }}
+          />
+          <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start',
+            fontSize: 13, color: '#555', marginBottom: 24, cursor: 'pointer' }}>
+            <input type="checkbox" checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              style={{ marginTop: 3, width: 16, height: 16, flexShrink: 0 }} />
+            <span>
+              Acepto ser responsable de los productos que publico. Me comprometo a no vender
+              artículos ilegales, robados o falsificados.
+            </span>
+          </label>
+          <button
+            onClick={handleCreateSeller}
+            disabled={savingSeller || !acceptedTerms || !storeName.trim()}
+            style={{
+              width: '100%', padding: 14, fontSize: 16, fontWeight: 600,
+              border: 'none', borderRadius: 12, cursor: savingSeller || !acceptedTerms || !storeName.trim() ? 'not-allowed' : 'pointer',
+              background: savingSeller || !acceptedTerms || !storeName.trim() ? '#ccc' : '#000',
+              color: '#fff'
+            }}>
+            {savingSeller ? 'Creando tu tienda...' : '🎉 ¡Crear mi tienda gratis!'}
+          </button>
+          <button onClick={() => setOnboardingStep(2)}
+            style={{ width: '100%', padding: 10, background: 'none', border: 'none',
+              color: '#999', fontSize: 14, cursor: 'pointer', marginTop: 8 }}>
+            ← Atrás
+          </button>
+        </>
+      )}
     </div>
   )
 
-  // ── ONBOARDING PASO 2: store ─────────────────────────────────
+  // ── FALLBACK: seller sin tienda ─────────────────────────────
   if (!store) return (
     <div style={{ padding: 20, maxWidth: 400, margin: '0 auto' }}>
       <h2>Crea tu tienda 🏪</h2>
-      <p style={{ color: '#666', marginBottom: 20 }}>Hola {seller.name}, solo 3 datos más</p>
+      <p style={{ color: '#666', marginBottom: 20 }}>Hola {seller.name}, ponle nombre a tu puesto</p>
       <input placeholder="Nombre de tu puesto *" value={storeName}
         onChange={(e) => setStoreName(e.target.value)}
         style={{ width: '100%', padding: 12, marginBottom: 10, fontSize: 16, boxSizing: 'border-box' }} />
       <input placeholder="WhatsApp donde te contactarán *" value={storeWhatsapp}
         onChange={(e) => setStoreWhatsapp(e.target.value)} type="tel"
-        style={{ width: '100%', padding: 12, marginBottom: 10, fontSize: 16, boxSizing: 'border-box' }} />
-      <input placeholder="¿Qué vendes? (opcional)" value={storeDescription}
-        onChange={(e) => setStoreDescription(e.target.value)}
         style={{ width: '100%', padding: 12, marginBottom: 16, fontSize: 16, boxSizing: 'border-box' }} />
-
-      {/* Selector de hubs múltiple */}
-      <div style={{ marginBottom: 16 }}>
-        <p style={{ fontWeight: 600, fontSize: 14, color: '#333', margin: '0 0 8px' }}>¿En qué tianguis tienes puesto?</p>
-        {selectedHubs.map((sh, index) => (
-          <div key={index} style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
-            <select value={sh.hub_id}
-              onChange={e => { const u = [...selectedHubs]; u[index] = { ...u[index], hub_id: e.target.value }; setSelectedHubs(u) }}
-              style={{ flex: 2, padding: 8, borderRadius: 8, border: '1px solid #ddd', fontSize: 14 }}>
-              <option value="">Selecciona tianguis</option>
-              {hubs.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
-            </select>
-            <select value={sh.day_of_week}
-              onChange={e => { const u = [...selectedHubs]; u[index] = { ...u[index], day_of_week: e.target.value }; setSelectedHubs(u) }}
-              style={{ flex: 1, padding: 8, borderRadius: 8, border: '1px solid #ddd', fontSize: 14 }}>
-              <option value="">Día</option>
-              {['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'].map(d => <option key={d} value={d}>{d}</option>)}
-            </select>
-            <button onClick={() => setSelectedHubs(selectedHubs.filter((_, i) => i !== index))}
-              style={{ padding: '8px 10px', background: '#fee', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>✕</button>
-          </div>
-        ))}
-        <button onClick={() => setSelectedHubs([...selectedHubs, { hub_id: '', day_of_week: '' }])}
-          style={{ padding: '8px 16px', background: '#f5f5f5', border: '1px solid #ddd', borderRadius: 8, cursor: 'pointer', fontSize: 14 }}>
-          + Agregar tianguis
-        </button>
-      </div>
-
       <button onClick={handleCreateStore} disabled={savingStore}
         style={{ width: '100%', padding: 14, background: savingStore ? '#ccc' : '#000',
           color: 'white', border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 'bold' }}>
-        {savingStore ? 'Creando tu tienda...' : 'Crear tienda →'}
+        {savingStore ? 'Creando...' : 'Crear tienda →'}
       </button>
     </div>
   )
@@ -693,14 +759,18 @@ function Dashboard() {
 
       {[
         { placeholder: '¿Qué vendes? *', value: title, setValue: setTitle, type: 'text' },
-        { placeholder: 'Precio $ *', value: price, setValue: setPrice, type: 'number' },
-        { placeholder: 'Categoría (opcional)', value: category, setValue: setCategory, type: 'text' }
+        { placeholder: 'Precio $ *', value: price, setValue: setPrice, type: 'number' }
       ].map(f => (
         <input key={f.placeholder} placeholder={f.placeholder} value={f.value}
           onChange={(e) => f.setValue(e.target.value)} type={f.type}
           inputMode={f.type === 'number' ? 'decimal' : undefined}
           style={{ width: '100%', padding: 12, marginBottom: 10, fontSize: 15, boxSizing: 'border-box' }} />
       ))}
+      <select value={category} onChange={(e) => setCategory(e.target.value)}
+        style={{ width: '100%', padding: 12, marginBottom: 10, fontSize: 15, boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: 8 }}>
+        <option value="">Seleccionar categoría</option>
+        {CATEGORIAS.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+      </select>
 
       <button onClick={createProduct} disabled={uploading}
         style={{ width: '100%', padding: 14, background: uploading ? '#ccc' : '#000',
@@ -855,9 +925,11 @@ function Dashboard() {
             <input value={editPrice} onChange={(e) => setEditPrice(e.target.value)}
               placeholder="Precio *" type="number" inputMode="decimal"
               style={{ width: '100%', padding: 12, marginBottom: 10, fontSize: 15, boxSizing: 'border-box', borderRadius: 8, border: '1px solid #ddd' }} />
-            <input value={editCategory} onChange={(e) => setEditCategory(e.target.value)}
-              placeholder="Categoría (opcional)"
-              style={{ width: '100%', padding: 12, marginBottom: 16, fontSize: 15, boxSizing: 'border-box', borderRadius: 8, border: '1px solid #ddd' }} />
+            <select value={editCategory} onChange={(e) => setEditCategory(e.target.value)}
+              style={{ width: '100%', padding: 12, marginBottom: 16, fontSize: 15, boxSizing: 'border-box', borderRadius: 8, border: '1px solid #ddd' }}>
+              <option value="">Seleccionar categoría</option>
+              {CATEGORIAS.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+            </select>
 
             <button onClick={handleSaveEdit} disabled={savingEdit}
               style={{ width: '100%', padding: 14, background: savingEdit ? '#ccc' : '#000',
