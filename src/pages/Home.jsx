@@ -26,11 +26,18 @@ const capitalize = (str) => {
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
 }
 
+const CATEGORIAS = [
+  'Todos', 'Ropa', 'Tenis y Calzado', 'Electrónicos', 'Antigüedades', 'Vintage',
+  'Hogar', 'Libros', 'Arte', 'Artesanía', 'Juguetes',
+  'Deportes', 'Accesorios', 'Joyería', 'Otro'
+]
+
 function Home({ showSellerHint, onHintSeen }) {
   const navigate = useNavigate()
 
   const [hubs, setHubs] = useState([])
   const [products, setProducts] = useState([])
+  const [activeFilter, setActiveFilter] = useState('Todos')
   const [searchQuery, setSearchQuery] = useState('')
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -111,6 +118,9 @@ function Home({ showSellerHint, onHintSeen }) {
     p.title?.toLowerCase().includes(safeQuery.toLowerCase()) ||
     p.category?.toLowerCase().includes(safeQuery.toLowerCase())
   )
+  const displayedProducts = activeFilter === 'Todos'
+    ? filteredProducts
+    : filteredProducts.filter(p => p.category === activeFilter)
 
   return (
     <div style={{ background: '#f4f4f4', minHeight: '100vh', overflowX: 'hidden', width: '100%' }}>
@@ -263,16 +273,50 @@ function Home({ showSellerHint, onHintSeen }) {
               </div>
             )}
 
+            {/* ── FILTROS POR CATEGORÍA ── */}
+            <div style={{ overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', marginBottom: 16 }}>
+              <div style={{ display: 'flex', gap: 8, padding: '0 16px 8px' }}>
+                {CATEGORIAS.map(cat => {
+                  const count = cat === 'Todos'
+                    ? filteredProducts.length
+                    : filteredProducts.filter(p => p.category === cat).length
+                  if (count === 0 && cat !== 'Todos') return null
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setActiveFilter(cat)}
+                      style={{
+                        padding: '8px 16px',
+                        background: activeFilter === cat ? '#F5BF3A' : '#fff',
+                        color: activeFilter === cat ? '#0B365C' : '#666',
+                        border: activeFilter === cat ? 'none' : '1px solid #ddd',
+                        borderRadius: 20,
+                        fontSize: 13,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                        flexShrink: 0,
+                        transition: 'all 0.2s'
+                      }}>
+                      {cat} ({count})
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
             {/* ── SECCIÓN: PRODUCTOS RECIENTES ── */}
             <h2 style={{ fontSize: 16, marginBottom: 12, color: '#333' }}>
               🛍️ Productos recientes
             </h2>
 
-            {filteredProducts.length === 0 ? (
+            {displayedProducts.length === 0 ? (
               <p style={{ textAlign: 'center', color: '#999', padding: 32 }}>
                 {searchQuery
                   ? `No encontramos productos para "${safeQuery}"`
-                  : 'No hay productos disponibles.'}
+                  : activeFilter !== 'Todos'
+                    ? `No hay productos en "${activeFilter}".`
+                    : 'No hay productos disponibles.'}
               </p>
             ) : (
               <div style={{
@@ -284,7 +328,7 @@ function Home({ showSellerHint, onHintSeen }) {
                 boxSizing: 'border-box',
                 maxWidth: '100%'
               }}>
-                {filteredProducts.map(p => (
+                {displayedProducts.map(p => (
                   <div
                     key={p.id}
                     onClick={() => navigate(`/producto/${p.id}`)}
